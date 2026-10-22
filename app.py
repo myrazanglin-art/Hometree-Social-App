@@ -1,7 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Hometree Super App", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Hometree Extreme", layout="wide", initial_sidebar_state="collapsed")
 st.markdown("""
     <style>
         #MainMenu {visibility: hidden;}
@@ -21,22 +21,24 @@ html_code = """
     <style>
         :root {
             --bg: #F5F5F7; --panel: #FFFFFF; --text: #1D1D1F; --sub: #86868B;
-            --border: #E5E5EA; --accent: #FF69B4; --card-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            --border: #E5E5EA; --accent: #FF69B4; --card-shadow: 0 4px 12px rgba(0,0,0,0.1);
             --douban: #007722; --netease: #C20C0C; --ai-blue: #12B7F5;
         }
         [data-theme="dark"] {
             --bg: #121212; --panel: #1E1E1E; --text: #F2F2F7; --sub: #8E8E93;
-            --border: #333333; --accent: #FF1493; --card-shadow: 0 10px 20px rgba(0,0,0,0.8);
+            --border: #333333; --accent: #FF1493; --card-shadow: 0 4px 12px rgba(0,0,0,0.8);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; transition: background 0.3s; }
 
-        /* 全局结构 */
+        /* 全局框架 */
         .app { display: flex; flex-direction: column; height: 100vh; }
-        .top-bar { height: 50px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 10; }
-        .logo { font-size: 20px; font-weight: 900; color: var(--accent); }
-        .content { flex: 1; overflow-y: auto; position: relative; }
-        .tab-page { display: none; padding: 20px; height: 100%; }
+        .top-bar { height: 50px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 100; }
+        .logo { font-size: 20px; font-weight: 900; color: var(--accent); letter-spacing: -1px;}
+        .content { flex: 1; overflow: hidden; position: relative; }
+
+        /* 极繁页面 */
+        .tab-page { display: none; height: 100%; overflow-y: auto; padding: 15px; }
         .tab-page.active { display: block; }
 
         /* 底部导航 */
@@ -45,103 +47,121 @@ html_code = """
         .nav-item.active { color: var(--accent); }
         .nav-icon { font-size: 22px; margin-bottom: 2px; }
 
-        /* ====== 1. 匹配页 (Tinder) ====== */
-        .match-wrapper { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        /* ================== 1. 匹配页 (极繁 Tinder) ================== */
+        .match-layout { display: flex; gap: 20px; height: 100%; max-width: 900px; margin: 0 auto; }
+        .deck-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .card-container { width: 320px; height: 480px; position: relative; }
-        .swipe-card { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--panel); border-radius: 20px; border: 1px solid var(--border); box-shadow: var(--card-shadow); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: bottom center; }
-        .card-img { width: 100%; height: 55%; object-fit: cover; }
-        .card-info { padding: 15px; flex: 1; display: flex; flex-direction: column; }
-        .name-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
-        .name { font-size: 22px; font-weight: bold; }
-        .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
-        .tag { background: var(--bg); border: 1px solid var(--border); color: var(--accent); padding: 2px 8px; border-radius: 12px; font-size: 11px; }
-        .media-links { display: flex; gap: 5px; margin-bottom: 10px; }
-        .media-btn { padding: 2px 6px; border-radius: 4px; font-size: 10px; color: white; text-decoration: none; cursor: pointer; }
+        
+        .swipe-card { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--panel); border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--card-shadow); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: bottom center; }
+        .card-img { width: 100%; height: 50%; object-fit: cover; }
+        .card-info { padding: 12px; flex: 1; display: flex; flex-direction: column; background: linear-gradient(to bottom, var(--panel), #fafafa); }
+        .name-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+        .name { font-size: 20px; font-weight: bold; }
+        .age { font-size: 13px; color: var(--sub); }
+        .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+        .tag { background: #FFF0F5; border: 1px solid #FFB6C1; color: var(--accent); padding: 2px 6px; border-radius: 4px; font-size: 10px; }
+        .media-links { display: flex; gap: 6px; margin-bottom: 8px; }
+        .media-btn { padding: 2px 6px; border-radius: 4px; font-size: 10px; color: white; cursor: pointer; }
         .btn-douban { background: var(--douban); }
         .btn-netease { background: var(--netease); }
-        .quote { font-size: 12px; color: var(--sub); font-style: italic; border-left: 2px solid var(--accent); padding-left: 8px; margin-bottom: 10px; flex: 1; }
-        .ai-agent { font-size: 11px; color: var(--ai-blue); font-family: monospace; background: rgba(18,183,245,0.1); padding: 8px; border-radius: 6px; border: 1px dashed var(--ai-blue); }
+        .quote { font-size: 12px; color: var(--sub); font-style: italic; border-left: 2px solid var(--accent); padding-left: 6px; margin-bottom: 8px; flex: 1;}
+        .ai-agent { font-size: 11px; color: var(--ai-blue); font-family: monospace; background: rgba(18,183,245,0.05); padding: 6px; border-radius: 4px; border: 1px dashed var(--ai-blue); }
         
         .controls { margin-top: 20px; display: flex; gap: 20px; }
-        .btn { width: 60px; height: 60px; border-radius: 50%; border: 1px solid var(--border); background: var(--panel); color: var(--text); font-size: 24px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: var(--card-shadow); }
-        .btn-like { width: 70px; height: 70px; color: var(--accent); border-color: var(--accent); }
+        .btn { width: 55px; height: 55px; border-radius: 50%; border: 1px solid var(--border); background: var(--panel); color: var(--text); font-size: 20px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: var(--card-shadow); }
+        .btn-like { width: 65px; height: 65px; color: var(--accent); border-color: var(--accent); font-size: 24px;}
 
-        /* ====== 2. 书市 (多抓鱼风) ====== */
-        .book-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        .book-item { display: flex; gap: 15px; background: var(--panel); padding: 15px; border-radius: 12px; box-shadow: var(--card-shadow); }
-        .book-cover { width: 80px; height: 110px; object-fit: cover; border-radius: 4px; }
-        .book-info { flex: 1; }
-        .book-title { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
-        .book-author { font-size: 12px; color: var(--sub); }
-        .book-price { color: #E65100; font-weight: bold; margin-top: 5px; }
-        .buy-btn { padding: 5px 10px; background: var(--accent); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; float: right; }
+        /* 右侧：已匹配列表 (常驻，极繁感) */
+        .matches-sidebar { width: 250px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; overflow-y: auto; }
+        .matches-title { font-size: 14px; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+        .match-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .match-item:hover { background: var(--bg); }
+        .match-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); }
+        .match-info { flex: 1; overflow: hidden; }
+        .match-name { font-size: 13px; font-weight: bold; }
+        .match-last { font-size: 11px; color: var(--sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* ====== 3. 社区 (小红书风) ====== */
-        .xhs-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        .xhs-post { background: var(--panel); border-radius: 12px; overflow: hidden; box-shadow: var(--card-shadow); }
-        .xhs-img { width: 100%; height: 200px; object-fit: cover; }
-        .xhs-text { padding: 10px; font-size: 13px; font-weight: bold; }
+        /* ================== 2. 书市 (多抓鱼极繁版) ================== */
+        .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+        .book-item { display: flex; gap: 12px; background: var(--panel); padding: 12px; border-radius: 12px; box-shadow: var(--card-shadow); border: 1px solid var(--border); }
+        .book-cover { width: 70px; height: 100px; object-fit: cover; border-radius: 4px; }
+        .book-info { flex: 1; display: flex; flex-direction: column;}
+        .book-title { font-size: 14px; font-weight: bold; margin-bottom: 4px; }
+        .book-meta { font-size: 11px; color: var(--sub); margin-bottom: 8px;}
+        .book-price { color: #E65100; font-weight: bold; font-size: 14px; margin-top: auto;}
+        .buy-btn { padding: 4px 8px; background: var(--accent); color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer; float: right; margin-top: auto;}
 
-        /* ====== 4. 我的与隐私 ====== */
-        .profile-box { background: var(--panel); padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center; }
-        .avatar { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--accent); object-fit: cover; margin-bottom: 10px; }
-        .sync-text { font-size: 12px; color: var(--sub); margin-top: 5px; }
-        .settings-box { background: var(--panel); border-radius: 12px; padding: 15px; }
-        .setting-row { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid var(--border); }
-        .setting-row:last-child { border-bottom: none; }
-        .toggle { width: 40px; height: 20px; background: var(--border); border-radius: 10px; position: relative; cursor: pointer; }
-        .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: white; border-radius: 50%; transition: 0.3s; }
+        /* ================== 3. 社区 (小红书瀑布流) ================== */
+        .xhs-masonry { column-count: 2; column-gap: 15px; }
+        .xhs-card { background: var(--panel); border-radius: 12px; overflow: hidden; box-shadow: var(--card-shadow); margin-bottom: 15px; break-inside: avoid; border: 1px solid var(--border); }
+        .xhs-img { width: 100%; object-fit: cover; }
+        .xhs-content { padding: 10px; font-size: 13px; font-weight: bold; line-height: 1.4; }
+        .xhs-author { display: flex; align-items: center; gap: 8px; padding: 0 10px 10px; font-size: 11px; color: var(--sub); }
+        .xhs-avatar { width: 20px; height: 20px; border-radius: 50%; }
+
+        /* ================== 4. 我的/隐私 ================== */
+        .profile-header { background: var(--panel); padding: 20px; border-radius: 12px; display: flex; gap: 15px; align-items: center; margin-bottom: 20px; border: 1px solid var(--border);}
+        .avatar { width: 70px; height: 70px; border-radius: 16px; object-fit: cover; border: 2px solid var(--accent); }
+        .settings-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .setting-card { background: var(--panel); border-radius: 12px; padding: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); font-size: 14px;}
+        .toggle { width: 40px; height: 22px; background: var(--border); border-radius: 11px; position: relative; cursor: pointer; }
+        .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: white; border-radius: 50%; transition: 0.3s; }
         .toggle.active { background: var(--accent); }
-        .toggle.active::after { transform: translateX(20px); }
+        .toggle.active::after { transform: translateX(18px); }
 
-        /* ====== 聊天弹窗 ====== */
+        /* ================== 5. 聊天弹窗 (持久化保存) ================== */
         .chat-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--panel); z-index: 1000; display: none; flex-direction: column; }
-        .chat-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
-        .back-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text); margin-right: 10px; }
-        .chat-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .chat-header { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; background: var(--panel); }
+        .back-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text); }
+        .chat-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
         .chat-name { font-size: 16px; font-weight: bold; }
-        .chat-body { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .msg { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 14px; }
-        .msg-left { background: var(--bg); align-self: flex-start; border-bottom-left-radius: 4px; }
-        .msg-right { background: var(--accent); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
-        .ai-suggest-box { padding: 10px 20px; }
-        .ai-suggest-btn { width: 100%; padding: 10px; background: rgba(18,183,245,0.1); color: var(--ai-blue); border: 1px dashed var(--ai-blue); border-radius: 8px; cursor: pointer; font-size: 12px; text-align: center; }
-        .chat-input-area { padding: 15px; border-top: 1px solid var(--border); display: flex; gap: 10px; }
-        .chat-input { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; }
+        .chat-body { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: var(--bg); }
+        .msg { max-width: 80%; padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.4; }
+        .msg-left { background: var(--panel); border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 2px; }
+        .msg-right { background: var(--accent); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .chat-input-area { padding: 15px; border-top: 1px solid var(--border); display: flex; gap: 10px; background: var(--panel); }
+        .chat-input { flex: 1; padding: 10px 15px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; }
         .send-btn { padding: 0 20px; border-radius: 20px; border: none; background: var(--accent); color: white; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body data-theme="light">
 
     <div class="app">
-        <!-- 顶部栏 -->
         <div class="top-bar">
-            <div class="logo">HOMETREE.</div>
-            <button class="theme-btn" onclick="toggleTheme()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--text)">🌙</button>
+            <div class="logo">HOMETREE. 🌸</div>
+            <button class="theme-btn" onclick="toggleTheme()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--text)">🌙 夜间模式</button>
         </div>
 
-        <!-- 内容区 -->
         <div class="content">
-            <!-- 匹配页 -->
+            <!-- 1. 匹配页 -->
             <div class="tab-page active" id="page-match">
-                <div class="match-wrapper">
-                    <div class="card-container" id="cardContainer"></div>
-                    <div class="controls">
-                        <button class="btn" onclick="swipe('left')">✕</button>
-                        <button class="btn btn-like" onclick="swipe('right')">♥</button>
+                <div class="match-layout">
+                    <div class="deck-area">
+                        <div class="card-container" id="cardContainer"></div>
+                        <div class="controls">
+                            <button class="btn" onclick="swipe('left')">✕</button>
+                            <button class="btn btn-like" onclick="swipe('right')">♥</button>
+                        </div>
+                    </div>
+                    <!-- 右侧已匹配列表 -->
+                    <div class="matches-sidebar">
+                        <div class="matches-title">💬 匹配消息 ({matchesCount})</div>
+                        <div id="matchesList">
+                            <!-- JS 动态渲染 -->
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 书市页 -->
+            <!-- 2. 书市页 -->
             <div class="tab-page" id="page-market">
-                <h2 style="margin-bottom:15px;">多抓鱼书市</h2>
-                <div class="book-grid">
+                <h2 style="margin-bottom:15px; font-size:18px;">多抓鱼书市 (二手漂流)</h2>
+                <div class="market-grid">
                     <div class="book-item">
                         <img src="https://img9.doubanio.com/view/subject/s/public/s28385152.jpg" class="book-cover">
                         <div class="book-info">
                             <div class="book-title">撒哈拉的故事</div>
-                            <div class="book-author">三毛 | 9成新</div>
+                            <div class="book-meta">三毛 | 9成新 | 北京</div>
                             <div class="book-price">¥ 12.00 <button class="buy-btn">加入书袋</button></div>
                         </div>
                     </div>
@@ -149,7 +169,7 @@ html_code = """
                         <img src="https://img9.doubanio.com/view/subject/s/public/s27310421.jpg" class="book-cover">
                         <div class="book-info">
                             <div class="book-title">我的天才女友</div>
-                            <div class="book-author">费兰特 | 8成新</div>
+                            <div class="book-meta">费兰特 | 8成新 | 上海</div>
                             <div class="book-price">¥ 18.50 <button class="buy-btn">加入书袋</button></div>
                         </div>
                     </div>
@@ -157,47 +177,68 @@ html_code = """
                         <img src="https://img3.doubanio.com/view/subject/s/public/s33747736.jpg" class="book-cover">
                         <div class="book-info">
                             <div class="book-title">正常人</div>
-                            <div class="book-author">萨莉·鲁尼 | 全新</div>
+                            <div class="book-meta">萨莉·鲁尼 | 全新 | 广州</div>
                             <div class="book-price">¥ 25.00 <button class="buy-btn">加入书袋</button></div>
+                        </div>
+                    </div>
+                    <div class="book-item">
+                        <img src="https://img1.doubanio.com/view/subject/s/public/s27237850.jpg" class="book-cover">
+                        <div class="book-info">
+                            <div class="book-title">百年孤独</div>
+                            <div class="book-meta">马尔克斯 | 7成新 | 杭州</div>
+                            <div class="book-price">¥ 9.90 <button class="buy-btn">加入书袋</button></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 社区页 -->
+            <!-- 3. 社区页 -->
             <div class="tab-page" id="page-community">
-                <h2 style="margin-bottom:15px;">精神自留地</h2>
-                <div class="xhs-grid">
-                    <div class="xhs-post">
-                        <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500" class="xhs-img">
-                        <div class="xhs-text">罗大佑的歌词，句句都是时代挽歌。</div>
+                <h2 style="margin-bottom:15px; font-size:18px;">精神自留地</h2>
+                <div class="xhs-masonry">
+                    <div class="xhs-card">
+                        <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400" class="xhs-img" style="height:250px;">
+                        <div class="xhs-content">罗大佑的歌词，句句都是时代挽歌。</div>
+                        <div class="xhs-author"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=50" class="xhs-avatar"> Yiming</div>
                     </div>
-                    <div class="xhs-post">
-                        <img src="https://images.unsplash.com/photo-1520637836862-4d197d17c90a?w=500" class="xhs-img">
-                        <div class="xhs-text">重看《搏击俱乐部》，还是被 Tyler 震撼。</div>
+                    <div class="xhs-card">
+                        <img src="https://images.unsplash.com/photo-1520637836862-4d197d17c90a?w=400" class="xhs-img" style="height:180px;">
+                        <div class="xhs-content">重看《搏击俱乐部》，还是被 Tyler 震撼。</div>
+                        <div class="xhs-author"><img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=50" class="xhs-avatar"> 娄烨</div>
+                    </div>
+                    <div class="xhs-card">
+                        <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400" class="xhs-img" style="height:220px;">
+                        <div class="xhs-content">Björk 的现场是一场极光祭祀。</div>
+                        <div class="xhs-author"><img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=50" class="xhs-avatar"> Björk</div>
                     </div>
                 </div>
             </div>
 
-            <!-- 我的页 -->
+            <!-- 4. 我的页 -->
             <div class="tab-page" id="page-profile">
-                <div class="profile-box">
+                <div class="profile-header">
                     <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200" class="avatar">
-                    <h2>Yiming</h2>
-                    <div class="sync-text">已同步：豆瓣 126本在读 | 网易云 89首私藏</div>
-                </div>
-                <div class="settings-box">
-                    <div class="setting-row">
-                        <span>隐身模式</span>
-                        <div class="toggle" onclick="this.classList.toggle('active')"></div>
+                    <div>
+                        <h2 style="font-size:18px;">Yiming</h2>
+                        <p style="font-size:12px;color:var(--sub); margin-top:5px;">豆瓣 126本在读 | 网易云 89首私藏</p>
                     </div>
-                    <div class="setting-row">
-                        <span>黑名单管理</span>
+                </div>
+                <div class="settings-grid">
+                    <div class="setting-card">
+                        <span>🔒 隐身模式 (不被推荐)</span>
+                        <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+                    </div>
+                    <div class="setting-card">
+                        <span>🚫 屏蔽/拉黑管理</span>
                         <span style="color:var(--accent); cursor:pointer;">查看 (2)</span>
                     </div>
-                    <div class="setting-row">
-                        <span>退出登录</span>
-                        <span style="color:red; cursor:pointer;">退出</span>
+                    <div class="setting-card">
+                        <span>📚 同步豆瓣书影音</span>
+                        <span style="color:var(--accent); cursor:pointer;">已绑定</span>
+                    </div>
+                    <div class="setting-card">
+                        <span>🎵 同步网易云歌单</span>
+                        <span style="color:var(--sub); cursor:pointer;">未绑定</span>
                     </div>
                 </div>
             </div>
@@ -220,11 +261,8 @@ html_code = """
             <div class="chat-name" id="chatName"></div>
         </div>
         <div class="chat-body" id="chatBody"></div>
-        <div class="ai-suggest-box">
-            <div class="ai-suggest-btn" onclick="useAISuggest()">💡 AI Agent 破冰：点击生成专属开场白</div>
-        </div>
         <div class="chat-input-area">
-            <input class="chat-input" id="chatInput" placeholder="发消息...">
+            <input class="chat-input" id="chatInput" placeholder="发消息..." onkeypress="if(event.key === 'Enter') sendMessage()">
             <button class="send-btn" onclick="sendMessage()">发送</button>
         </div>
     </div>
@@ -232,105 +270,174 @@ html_code = """
     <script>
         // ================= 1. 数据配置 =================
         const users = [
-            { name: "娄烨", age: 58, img: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600", tags: ["苏州河", "推拿", "第六代"], quote: "如果有一天我走了，你会像马达那样找我吗？", ai: "AI: 适合在雨天聊贾宏声。", opening: "你更喜欢《苏州河》里的马达，还是《推拿》里的小马？" },
-            { name: "Tyler Durden", age: 30, img: "https://images.unsplash.com/photo-1520637836862-4d197d17c90a?w=600", tags: ["Fight Club", "虚无主义"], quote: "You are not your job.", ai: "AI: 别聊工作，聊地下搏击。", opening: "你觉得现代消费主义最恶心的一点是什么？" },
-            { name: "Morrissey", age: 64, img: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600", tags: ["The Smiths", "Jangle Pop"], quote: "There is a light that never goes out.", ai: "AI: 深夜 emo 必备。", opening: "如果那辆双层巴士真的撞过来，你会放哪首歌？" },
-            { name: "Björk", age: 58, img: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600", tags: ["Art Pop", "实验电子"], quote: "I'm carried by the storm.", ai: "AI: 冰岛极光与实验电子。", opening: "你的音乐里有一种冰川碎裂的声音，最近在听什么实验电子？" },
-            { name: "罗大佑", age: 68, img: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600", tags: ["鹿港小镇", "时代挽歌"], quote: "台北不是我的家。", ai: "AI: 午夜聊华语启蒙。", opening: "你觉得现在的华语乐坛，还有人在写《鹿港小镇》这样的歌吗？" },
-            { name: "Emo Kid", age: 22, img: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=600", tags: ["Midwest Emo", "Math Rock"], quote: "Let's play in drop D.", ai: "AI: 延迟效果器男孩。", opening: "你最喜欢 American Football 同名专辑里的哪一首？" },
-            { name: "Matt Bellamy", age: 45, img: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600", tags: ["Muse", "Space Rock"], quote: "This is the last time.", ai: "AI: 科幻与反乌托邦。", opening: "如果世界即将毁灭，你会用哪首 Muse 的歌作为BGM？" },
-            { name: "Aphex Twin", age: 52, img: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600", tags: ["IDM", "Ambient"], quote: "Weird music for weird people.", ai: "AI: Max/MSP 同好。", opening: "Windowlicker 里的碎拍，你到底是怎么切出来的？" },
-            { name: "Kurt Cobain", age: 27, img: "https://images.unsplash.com/photo-1520637836862-4d197d17c90a?w=600", tags: ["Nirvana", "Grunge"], quote: "I'd rather be hated for who I am.", ai: "AI: 聊聊地下厂牌。", opening: "如果你还在，你会怎么看待现在的短视频神曲？" },
-            { name: "Kevin Shields", age: 60, img: "https://images.unsplash.com/photo-1516280440502-863a346513c1?w=600", tags: ["Shoegaze", "MBV"], quote: "Loveless is a wall of sound.", ai: "AI: 噪音墙之神。", opening: "Loveless 这张专辑，你花了多久才听出里面的旋律？" }
+            { id: "louye", name: "娄烨", age: 58, img: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600", tags: ["苏州河", "推拿"], quote: "如果有一天我走了...", ai: "AI: 适合在雨天聊贾宏声。" },
+            { id: "tyler", name: "Tyler Durden", age: 30, img: "https://images.unsplash.com/photo-1520637836862-4d197d17c90a?w=600", tags: ["Fight Club", "Nihilism"], quote: "You are not your job.", ai: "AI: 别聊工作，聊地下搏击。" },
+            { id: "morrissey", name: "Morrissey", age: 64, img: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600", tags: ["The Smiths", "Indie"], quote: "There is a light...", ai: "AI: 深夜 emo 必备。" },
+            { id: "bjork", name: "Björk", age: 58, img: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600", tags: ["Art Pop", "实验电子"], quote: "I'm the spark.", ai: "AI: 冰岛极光与实验电子。" },
+            { id: "lotayu", name: "罗大佑", age: 68, img: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600", tags: ["鹿港小镇", "时代"], quote: "台北不是我的家。", ai: "AI: 午夜聊华语启蒙。" },
+            { id: "emo", name: "Midwest Emo", age: 22, img: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=600", tags: ["Math Rock", "Drop D"], quote: "Let's play in drop D.", ai: "AI: 效果器男孩。" },
+            { id: "muse", name: "Matt Bellamy", age: 45, img: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600", tags: ["Muse", "Space Rock"], quote: "This is the last time.", ai: "AI: 科幻与反乌托邦。" },
+            { id: "aphex", name: "Aphex Twin", age: 52, img: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600", tags: ["IDM", "Ambient"], quote: "Weird music.", ai: "AI: Max/MSP 同好。" },
+            { id: "kurt", name: "Kurt Cobain", age: 27, img: "https://images.unsplash.com/photo-1520637836862-4d197d17c90a?w=600", tags: ["Grunge", "Nirvana"], quote: "I'd rather be hated.", ai: "AI: 聊聊地下厂牌。" },
+            { id: "kevin", name: "Kevin Shields", age: 60, img: "https://images.unsplash.com/photo-1516280440502-863a346513c1?w=600", tags: ["Shoegaze", "MBV"], quote: "Loveless is a wall.", ai: "AI: 噪音墙之神。" }
         ];
 
+        // 全局状态存储
         let currentIndex = 0;
-        let currentMatch = null;
+        let matchedUsers = JSON.parse(localStorage.getItem('hometree_matches')) || [];
+        let chatHistories = JSON.parse(localStorage.getItem('hometree_chats')) || {};
+        let activeChatId = null;
+        
         const container = document.getElementById('cardContainer');
 
-        // ================= 2. 渲染与滑动 =================
-        function renderCards() {
+        // ================= 2. 渲染卡片与列表 =================
+        function renderAll() {
+            // 渲染卡片
             container.innerHTML = '';
-            for (let i = users.length - 1; i >= 0; i--) {
-                if (i < currentIndex) continue;
-                const user = users[i];
-                const card = document.createElement('div');
-                card.className = 'swipe-card';
-                const offset = i - currentIndex;
-                card.style.transform = `scale(${1 - offset * 0.04}) translateY(${offset * 15}px)`;
-                card.style.zIndex = -offset;
-                card.style.opacity = 1 - offset * 0.15;
-                
-                card.innerHTML = `
-                    <img src="${user.img}" class="card-img">
-                    <div class="card-info">
-                        <div class="name-row"><div class="name">${user.name}</div><div class="age">${user.age}</div></div>
-                        <div class="tags">${user.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
-                        <div class="media-links">
-                            <span class="media-btn btn-douban" onclick="event.stopPropagation(); alert('跳转豆瓣查看：${user.tags[0]}')">豆瓣同步</span>
-                            <span class="media-btn btn-netease" onclick="event.stopPropagation(); alert('跳转网易云查看：${user.tags[0]}')">网易云</span>
+            if (currentIndex >= users.length) {
+                container.innerHTML = '<div style="text-align:center;color:var(--sub);margin-top:200px;">没有更多推荐了</div>';
+            } else {
+                for (let i = users.length - 1; i >= 0; i--) {
+                    if (i < currentIndex) continue;
+                    const user = users[i];
+                    const card = document.createElement('div');
+                    card.className = 'swipe-card';
+                    const offset = i - currentIndex;
+                    card.style.transform = `scale(${1 - offset * 0.04}) translateY(${offset * 15}px)`;
+                    card.style.zIndex = -offset;
+                    card.style.opacity = 1 - offset * 0.15;
+                    
+                    card.innerHTML = `
+                        <img src="${user.img}" class="card-img">
+                        <div class="card-info">
+                            <div class="name-row"><div class="name">${user.name}</div><div class="age">${user.age}</div></div>
+                            <div class="tags">${user.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+                            <div class="media-links">
+                                <span class="media-btn btn-douban" onclick="event.stopPropagation(); alert('跳转豆瓣查看：${user.tags[0]}')">豆瓣</span>
+                                <span class="media-btn btn-netease" onclick="event.stopPropagation(); alert('跳转网易云查看：${user.tags[0]}')">网易云</span>
+                            </div>
+                            <div class="quote">"${user.quote}"</div>
+                            <div class="ai-agent">🤖 ${user.ai}</div>
                         </div>
-                        <div class="quote">"${user.quote}"</div>
-                        <div class="ai-agent">🤖 ${user.ai}</div>
+                    `;
+                    container.appendChild(card);
+                }
+            }
+
+            // 渲染右侧匹配列表
+            document.querySelector('.matches-title').innerHTML = `💬 匹配消息 (${matchedUsers.length})`;
+            const list = document.getElementById('matchesList');
+            list.innerHTML = '';
+            if(matchedUsers.length === 0) {
+                list.innerHTML = '<div style="font-size:12px; color:var(--sub); text-align:center; margin-top:20px;">划动卡片匹配他们吧</div>';
+            }
+            matchedUsers.forEach(u => {
+                const lastMsg = chatHistories[u.id] && chatHistories[u.id].length > 0 ? chatHistories[u.id].slice(-1)[0].text : "匹配成功，打个招呼吧！";
+                const item = document.createElement('div');
+                item.className = 'match-item';
+                item.onclick = () => openChat(u);
+                item.innerHTML = `
+                    <img src="${u.img}" class="match-avatar">
+                    <div class="match-info">
+                        <div class="match-name">${u.name}</div>
+                        <div class="match-last">${lastMsg}</div>
                     </div>
                 `;
-                container.appendChild(card);
-            }
+                list.appendChild(item);
+            });
         }
 
+        // ================= 3. 滑动与持久化 =================
         function swipe(direction) {
+            if (currentIndex >= users.length) return;
             const topCard = container.querySelector(`.swipe-card[style*="z-index: 0"]`);
             if (!topCard) return;
 
-            currentMatch = users[currentIndex];
+            const user = users[currentIndex];
 
             if (direction === 'right') {
                 topCard.style.transform = 'translateX(150%) rotate(20deg)';
-                setTimeout(() => { openChat(currentMatch); }, 300);
+                setTimeout(() => {
+                    // 添加到匹配列表并持久化
+                    if (!matchedUsers.find(u => u.id === user.id)) {
+                        matchedUsers.push(user);
+                        if(!chatHistories[user.id]) chatHistories[user.id] = [];
+                        saveState();
+                    }
+                    openChat(user); // 直接打开聊天
+                    renderAll(); // 更新UI
+                }, 300);
             } else {
                 topCard.style.transform = 'translateX(-150%) rotate(-20deg)';
             }
             currentIndex++;
-            setTimeout(renderCards, 350); 
+            setTimeout(renderAll, 350); 
         }
 
-        // ================= 3. 聊天系统 =================
+        // ================= 4. 聊天系统 (带 localStorage 存储) =================
         function openChat(user) {
+            activeChatId = user.id;
             document.getElementById('chatName').innerText = user.name;
             document.getElementById('chatAvatar').src = user.img;
-            document.getElementById('chatBody').innerHTML = ''; 
             document.getElementById('chatModal').style.display = 'flex';
-            setTimeout(() => {
-                addMessage(`Hey，很高兴在这个频率遇见你。`, 'left');
-            }, 600);
+            renderChatMessages();
         }
 
-        function closeChat() { document.getElementById('chatModal').style.display = 'none'; }
+        function closeChat() { 
+            document.getElementById('chatModal').style.display = 'none'; 
+            activeChatId = null;
+            renderAll(); // 刷新右侧列表最新消息预览
+        }
 
-        function addMessage(text, type) {
-            const chatBox = document.getElementById('chatBody');
-            const msg = document.createElement('div');
-            msg.className = `msg msg-${type}`;
-            msg.innerText = text;
-            chatBox.appendChild(msg);
-            chatBox.scrollTop = chatBox.scrollHeight;
+        function renderChatMessages() {
+            const body = document.getElementById('chatBody');
+            body.innerHTML = '';
+            const msgs = chatHistories[activeChatId] || [];
+            
+            if (msgs.length === 0) {
+                // 第一次聊，加个默认开场
+                const user = users.find(u => u.id === activeChatId);
+                addMessageToDB(activeChatId, `Hey，很高兴匹配到你。`, 'left');
+                renderChatMessages();
+                return;
+            }
+
+            msgs.forEach(m => {
+                const div = document.createElement('div');
+                div.className = `msg msg-${m.type}`;
+                div.innerText = m.text;
+                body.appendChild(div);
+            });
+            body.scrollTop = body.scrollHeight;
+        }
+
+        function addMessageToDB(id, text, type) {
+            if(!chatHistories[id]) chatHistories[id] = [];
+            chatHistories[id].push({ text, type });
+            saveState();
+            if(activeChatId === id) renderChatMessages();
         }
 
         function sendMessage() {
             const input = document.getElementById('chatInput');
-            if (input.value.trim() !== '') {
-                addMessage(input.value, 'right');
+            if (input.value.trim() !== '' && activeChatId) {
+                addMessageToDB(activeChatId, input.value, 'right');
                 input.value = '';
+                // 模拟回复
+                setTimeout(() => {
+                    addMessageToDB(activeChatId, "我也这么觉得，这就是我们在这里相遇的原因。", 'left');
+                }, 1000);
             }
         }
 
-        function useAISuggest() {
-            if(currentMatch) {
-                addMessage(currentMatch.opening, 'right');
-            }
+        // 数据存储到浏览器
+        function saveState() {
+            localStorage.setItem('hometree_matches', JSON.stringify(matchedUsers));
+            localStorage.setItem('hometree_chats', JSON.stringify(chatHistories));
+            renderAll();
         }
 
-        // ================= 4. 页面与主题切换 =================
+        // ================= 5. UI 切换 =================
         function switchTab(pageId, btnElement) {
             document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
@@ -343,7 +450,7 @@ html_code = """
             body.setAttribute('data-theme', body.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
         }
 
-        window.onload = renderCards;
+        window.onload = renderAll;
     </script>
 </body>
 </html>
