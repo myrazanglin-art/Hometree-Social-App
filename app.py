@@ -1,162 +1,135 @@
 import streamlit as st
-import requests
-import random
+import pandas as pd
+import numpy as np
 
-st.set_page_config(page_title="Hometree | Find Your Soul", page_icon="🌳", layout="centered")
+# 1. 页面配置与极简样式
+st.set_page_config(page_title="Hometree", layout="centered")
 
-apple_css = """
+# 模拟一个极简的 UI（类似豆瓣的留白和排版）
+st.markdown("""
 <style>
-    /* 全局背景与字体 */
-    .stApp {
-        background-color: #F5F5F7;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-    /* 隐藏 Streamlit 默认的顶部工具栏 */
-    header {visibility: hidden;}
-    
-    /* 卡片样式 */
-    .apple-card {
-        background: #FFFFFF;
-        border-radius: 20px;
-        padding: 30px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        margin-bottom: 20px;
-    }
-    
-    /* 标题 */
-    h1, h2, h3 {
-        color: #1D1D1F;
-        font-weight: 600;
-        letter-spacing: -0.5px;
-    }
-    
-    /* 小众标签 */
-    .niche-tag {
-        display: inline-block;
-        background: #E8E8ED;
-        color: #86868B;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 14px;
-        margin: 5px;
-        cursor: pointer;
-    }
-    
-    /* 极简播放器 */
-    .vinyl-player {
-        display: flex;
-        align-items: center;
-        background: #FFFFFF;
-        border-radius: 20px;
-        padding: 20px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        margin-top: 20px;
-    }
-    .album-cover {
-        width: 80px; height: 80px;
-        border-radius: 10px;
-        background: #000;
-        margin-right: 20px;
-        object-fit: cover;
-    }
-    .music-info h4 { margin: 0; color: #1D1D1F; font-size: 16px; }
-    .music-info p { margin: 5px 0 0 0; color: #86868B; font-size: 14px; }
+    .main-title { font-size: 36px; font-weight: bold; margin-bottom: 0px; }
+    .sub-title { font-size: 14px; color: #666; margin-bottom: 30px; }
+    .quote { font-style: italic; color: #555; font-size: 16px; margin-bottom: 20px; }
+    .stButton>button { width: 100%; border-radius: 4px; }
 </style>
-"""
-st.markdown(apple_css, unsafe_allow_html=True)
-
-# ==========================================
-# 2. 核心逻辑：对接豆瓣真实数据
-# ==========================================
-# (此处使用豆瓣公开 API 代理或模拟真实数据，以确保运行成功)
-# 我们打造一个小众书影音池，完美契合你的亚文化人设
-NICHE_ITEMS = {
-    "书籍": [
-        {"title": "《百年孤独》", "author": "加西亚·马尔克斯", "cover": "https://img9.doubanio.com/view/subject/s/public/s27237850.jpg"},
-        {"title": "《地下室手记》", "author": "陀思妥耶夫斯基", "cover": "https://img1.doubanio.com/view/subject/s/public/s27238019.jpg"},
-        {"title": "《消费社会》", "author": "让·鲍德里亚", "cover": "https://img2.doubanio.com/view/subject/s/public/s27239138.jpg"}
-    ],
-    "电影": [
-        {"title": "《蚀》", "author": "米开朗基罗·安东尼奥尼", "cover": "https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2515439334.webp"},
-        {"title": "《攻壳机动队》", "author": "押井守", "cover": "https://img1.doubanio.com/view/photo/s_ratio_poster/public/p2508721156.webp"},
-        {"title": "《穆赫兰道》", "author": "大卫·林奇", "cover": "https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2668391220.webp"}
-    ]
-}
-
-# 模拟的网易云歌单
-NETEASE_SONGS = [
-    {"name": "There Is a Light That Never Goes Out", "artist": "The Smiths", "id": "1314907329"},
-    {"name": "Apocalypse", "artist": "Cigarettes After Sex", "id": "1915209654"},
-    {"name": "Weird Fishes/Arpeggi", "artist": "Radiohead", "id": "1314907329"}
-]
-
-# ==========================================
-# 3. UI 渲染
-# ==========================================
-st.markdown("<div class='apple-card'>", unsafe_allow_html=True)
-st.title("Hometree.")
-st.subheader("连接灵魂的隐私社交。")
-st.write("基于书影音的极致小众匹配。我们不滑动，我们只寻找频率相同的人。")
-st.markdown("</div>", unsafe_allow_html=True)
-
-# 书影音对接模块
-st.markdown("### 📚 你的精神切片")
-tab1, tab2 = st.tabs(["最近在读", "最近在看"])
-
-with tab1:
-    for book in NICHE_ITEMS["书籍"]:
-        st.markdown(f"""
-        <div class="vinyl-player" style="margin-bottom: 10px; padding: 10px;">
-            <img class="album-cover" src="{book['cover']}">
-            <div class="music-info">
-                <h4>{book['title']}</h4>
-                <p>{book['author']}</p>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-with tab2:
-    for movie in NICHE_ITEMS["电影"]:
-        st.markdown(f"""
-        <div class="vinyl-player" style="margin-bottom: 10px; padding: 10px;">
-            <img class="album-cover" src="{movie['cover']}">
-            <div class="music-info">
-                <h4>{movie['title']}</h4>
-                <p>{movie['author']}</p>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-st.divider()
-
-# 网易云音乐模块
-st.markdown("### 🎧 你的精神频率 (网易云同步)")
-song = random.choice(NETEASE_SONGS)
-
-st.markdown(f"""
-<div class="vinyl-player">
-    <div style="width:80px; height:80px; border-radius:50%; background: linear-gradient(45deg, #1D1D1F, #3A3A3C); margin-right:20px; display:flex; justify-content:center; align-items:center;">
-        <div style="width:20px; height:20px; border-radius:50%; background:#FFF;"></div>
-    </div>
-    <div class="music-info">
-        <h4>{song['name']}</h4>
-        <p>{song['artist']} · 正在播放</p>
-    </div>
-</div>
 """, unsafe_allow_html=True)
 
-# 这里嵌入了真实的网易云外链播放器，实现真实播放
-st.components.v1.iframe(f"https://music.163.com/outchain/player?type=2&id={song['id']}&auto=0&height=66", height=80)
+# 头部
+st.markdown('<div class="main-title">Hometree.</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">基于书影音的隐私社交网络</div>', unsafe_allow_html=True)
 
+# 2. 初始化本地“数据库”（持久化在当前用户的会话中）
+if 'users_db' not in st.session_state:
+    st.session_state.users_db = {} # 格式: { "用户名": {"password": "xxx", "tags": [], "location": "xxx"} }
+if 'logged_in_user' not in st.session_state:
+    st.session_state.logged_in_user = None
+
+# 预置一些种子用户，让匹配算法有东西可以算
+if not st.session_state.users_db:
+    st.session_state.users_db = {
+        "yuki_indie": {"password": "123", "tags": ["独立音乐", "实验电子", "艺术电影"], "location": "香港"},
+        "john_doe": {"password": "123", "tags": ["摇滚乐", "科幻小说"], "location": "北京"},
+        "alice_art": {"password": "123", "tags": ["小众文学", "艺术电影", "独立音乐"], "location": "上海"}
+    }
+
+# 3. 用户注册与登录
+if st.session_state.logged_in_user is None:
+    st.markdown("### 登录 / 注册")
+    auth_mode = st.radio("请选择：", ["登录", "注册新账号"], horizontal=True)
+    
+    username = st.text_input("用户名")
+    password = st.text_input("密码", type="password")
+    
+    if auth_mode == "登录":
+        if st.button("登录"):
+            if username in st.session_state.users_db and st.session_state.users_db[username]["password"] == password:
+                st.session_state.logged_in_user = username
+                st.rerun()
+            else:
+                st.error("用户名或密码错误")
+    else:
+        location = st.text_input("你所在的城市（例如：香港）")
+        if st.button("注册并登录"):
+            if username in st.session_state.users_db:
+                st.error("该用户名已被注册")
+            elif len(username) > 0 and len(password) > 0:
+                st.session_state.users_db[username] = {"password": password, "tags": [], "location": location}
+                st.session_state.logged_in_user = username
+                st.rerun()
+            else:
+                st.error("请填写完整信息")
+
+# 4. 已登录状态下的核心功能
+else:
+    current_user = st.session_state.logged_in_user
+    st.success(f"当前登录状态：**{current_user}**")
+    
+    if st.button("退出登录"):
+        st.session_state.logged_in_user = None
+        st.rerun()
+        
+    st.divider()
+    
+    # 模块一：管理我的书影音档案
+    st.markdown("### 我的书影音档案")
+    st.write("在下面选择你喜欢的标签，这决定了你能匹配到谁：")
+    
+    all_tags = ["独立音乐", "摇滚乐", "实验电子", "科幻小说", "艺术电影", "悬疑电影", "小众文学", "古典音乐", "二次元", "摄影"]
+    user_tags = st.session_state.users_db[current_user]["tags"]
+    
+    selected_tags = st.multiselect("选择你的兴趣标签：", all_tags, default=user_tags)
+    
+    if st.button("保存档案"):
+        st.session_state.users_db[current_user]["tags"] = selected_tags
+        st.success("档案已保存！")
+
+    st.divider()
+    
+    # 模块二：算法匹配
+    st.markdown("### 灵魂匹配")
+    st.write("系统将根据协同过滤算法（余弦相似度），为你寻找精神频率最接近的人。")
+    
+    if st.button("开始匹配"):
+        if len(user_tags) == 0:
+            st.warning("请先在上方选择并保存你的书影音档案！")
+        else:
+            # 构建数据集进行相似度计算
+            all_users = list(st.session_state.users_db.keys())
+            all_tags_set = list(set([tag for u in all_users for tag in st.session_state.users_db[u]["tags"]] + all_tags))
+            
+            if len(all_tags_set) == 0:
+                st.info("目前没有足够的用户数据来计算。")
+            else:
+                # 构建独热编码矩阵
+                data = []
+                for u in all_users:
+                    user_vector = [1 if t in st.session_state.users_db[u]["tags"] else 0 for t in all_tags_set]
+                    data.append(user_vector)
+                
+                df = pd.DataFrame(data, index=all_users, columns=all_tags_set)
+                
+                # 计算余弦相似度
+                from sklearn.metrics.pairwise import cosine_similarity
+                sim_matrix = cosine_similarity(df)
+                sim_df = pd.DataFrame(sim_matrix, index=all_users, columns=all_users)
+                
+                # 获取当前用户与其他人的相似度
+                user_sims = sim_df[current_user].drop(current_user).sort_values(ascending=False)
+                
+                if len(user_sims) == 0:
+                    st.info("目前只有你一个用户，请邀请朋友来注册测试。")
+                else:
+                    best_match = user_sims.index[0]
+                    score = user_sims.iloc[0]
+                    
+                    if score > 0:
+                        match_info = st.session_state.users_db[best_match]
+                        st.success(f"匹配成功！与你的精神频率相似度：{score*100:.1f}%")
+                        st.info(f"匹配用户：**{best_match}** (来自 {match_info['location']})\n\nTA 的书影音偏好：{', '.join(match_info['tags'])}")
+                    else:
+                        st.warning("目前没有与你品味重合的人，快去多添加一些标签吧！")
+
+# 底部
 st.divider()
-
-# 匹配按钮
-st.markdown("<div class='apple-card' style='text-align: center;'>", unsafe_allow_html=True)
-st.write("#### 寻找同频的灵魂")
-if st.button("✨ 运行匹配算法 (Cosine Similarity)", use_container_width=True):
-    with st.spinner('正在计算多维向量空间...'):
-        import time
-        time.sleep(1.5) # 模拟算法计算时间
-        st.success("匹配成功！与你在《百年孤独》和 The Smiths 上品味重合度 98.7% 的用户：")
-        st.info("**@Yuki_Indie** (坐标：香港) - “我也喜欢在雨天听 Cigarettes After Sex。”")
-st.markdown("</div>", unsafe_allow_html=True)
+st.caption("Hometree MVP. Built with Python & Streamlit.")
