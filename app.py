@@ -1,135 +1,161 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
+import streamlit.components.v1 as components
 
-# 1. 页面配置与极简样式
-st.set_page_config(page_title="Hometree", layout="centered")
+# 设置页面配置（宽屏模式，更像真正的 App）
+st.set_page_config(page_title="Hometree - Find Your Soul", layout="wide", initial_sidebar_state="collapsed")
 
-# 模拟一个极简的 UI（类似豆瓣的留白和排版）
-st.markdown("""
-<style>
-    .main-title { font-size: 36px; font-weight: bold; margin-bottom: 0px; }
-    .sub-title { font-size: 14px; color: #666; margin-bottom: 30px; }
-    .quote { font-style: italic; color: #555; font-size: 16px; margin-bottom: 20px; }
-    .stButton>button { width: 100%; border-radius: 4px; }
-</style>
-""", unsafe_allow_html=True)
-
-# 头部
-st.markdown('<div class="main-title">Hometree.</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">基于书影音的隐私社交网络</div>', unsafe_allow_html=True)
-
-# 2. 初始化本地“数据库”（持久化在当前用户的会话中）
-if 'users_db' not in st.session_state:
-    st.session_state.users_db = {} # 格式: { "用户名": {"password": "xxx", "tags": [], "location": "xxx"} }
-if 'logged_in_user' not in st.session_state:
-    st.session_state.logged_in_user = None
-
-# 预置一些种子用户，让匹配算法有东西可以算
-if not st.session_state.users_db:
-    st.session_state.users_db = {
-        "yuki_indie": {"password": "123", "tags": ["独立音乐", "实验电子", "艺术电影"], "location": "香港"},
-        "john_doe": {"password": "123", "tags": ["摇滚乐", "科幻小说"], "location": "北京"},
-        "alice_art": {"password": "123", "tags": ["小众文学", "艺术电影", "独立音乐"], "location": "上海"}
-    }
-
-# 3. 用户注册与登录
-if st.session_state.logged_in_user is None:
-    st.markdown("### 登录 / 注册")
-    auth_mode = st.radio("请选择：", ["登录", "注册新账号"], horizontal=True)
-    
-    username = st.text_input("用户名")
-    password = st.text_input("密码", type="password")
-    
-    if auth_mode == "登录":
-        if st.button("登录"):
-            if username in st.session_state.users_db and st.session_state.users_db[username]["password"] == password:
-                st.session_state.logged_in_user = username
-                st.rerun()
-            else:
-                st.error("用户名或密码错误")
-    else:
-        location = st.text_input("你所在的城市（例如：香港）")
-        if st.button("注册并登录"):
-            if username in st.session_state.users_db:
-                st.error("该用户名已被注册")
-            elif len(username) > 0 and len(password) > 0:
-                st.session_state.users_db[username] = {"password": password, "tags": [], "location": location}
-                st.session_state.logged_in_user = username
-                st.rerun()
-            else:
-                st.error("请填写完整信息")
-
-# 4. 已登录状态下的核心功能
-else:
-    current_user = st.session_state.logged_in_user
-    st.success(f"当前登录状态：**{current_user}**")
-    
-    if st.button("退出登录"):
-        st.session_state.logged_in_user = None
-        st.rerun()
+# ==========================================
+# 核心：注入顶级 CSS 和 前端交互逻辑
+# ==========================================
+html_code = """
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --bg-color: #FFF0F5;
+            --text-color: #333;
+            --card-bg: #FFFFFF;
+            --accent: #FF69B4;
+            --accent-light: #FFB6C1;
+            --border: #FFE4E1;
+        }
+        [data-theme="dark"] {
+            --bg-color: #1A1A1A;
+            --text-color: #F5F5F5;
+            --card-bg: #2C2C2C;
+            --accent: #FF1493;
+            --accent-light: #8B008B;
+            --border: #444;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); transition: all 0.3s; overflow-x: hidden; }
         
-    st.divider()
-    
-    # 模块一：管理我的书影音档案
-    st.markdown("### 我的书影音档案")
-    st.write("在下面选择你喜欢的标签，这决定了你能匹配到谁：")
-    
-    all_tags = ["独立音乐", "摇滚乐", "实验电子", "科幻小说", "艺术电影", "悬疑电影", "小众文学", "古典音乐", "二次元", "摄影"]
-    user_tags = st.session_state.users_db[current_user]["tags"]
-    
-    selected_tags = st.multiselect("选择你的兴趣标签：", all_tags, default=user_tags)
-    
-    if st.button("保存档案"):
-        st.session_state.users_db[current_user]["tags"] = selected_tags
-        st.success("档案已保存！")
+        /* 顶部导航 */
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: var(--card-bg); box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .logo { font-size: 24px; font-weight: 800; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+        .theme-toggle { cursor: pointer; font-size: 20px; background: none; border: none; color: var(--text-color); }
 
-    st.divider()
-    
-    # 模块二：算法匹配
-    st.markdown("### 灵魂匹配")
-    st.write("系统将根据协同过滤算法（余弦相似度），为你寻找精神频率最接近的人。")
-    
-    if st.button("开始匹配"):
-        if len(user_tags) == 0:
-            st.warning("请先在上方选择并保存你的书影音档案！")
-        else:
-            # 构建数据集进行相似度计算
-            all_users = list(st.session_state.users_db.keys())
-            all_tags_set = list(set([tag for u in all_users for tag in st.session_state.users_db[u]["tags"]] + all_tags))
-            
-            if len(all_tags_set) == 0:
-                st.info("目前没有足够的用户数据来计算。")
-            else:
-                # 构建独热编码矩阵
-                data = []
-                for u in all_users:
-                    user_vector = [1 if t in st.session_state.users_db[u]["tags"] else 0 for t in all_tags_set]
-                    data.append(user_vector)
-                
-                df = pd.DataFrame(data, index=all_users, columns=all_tags_set)
-                
-                # 计算余弦相似度
-                from sklearn.metrics.pairwise import cosine_similarity
-                sim_matrix = cosine_similarity(df)
-                sim_df = pd.DataFrame(sim_matrix, index=all_users, columns=all_users)
-                
-                # 获取当前用户与其他人的相似度
-                user_sims = sim_df[current_user].drop(current_user).sort_values(ascending=False)
-                
-                if len(user_sims) == 0:
-                    st.info("目前只有你一个用户，请邀请朋友来注册测试。")
-                else:
-                    best_match = user_sims.index[0]
-                    score = user_sims.iloc[0]
+        /* 主布局：左边匹配，右边聊天 */
+        .main-container { display: flex; height: calc(100vh - 80px); max-width: 1200px; margin: 0 auto; padding: 20px; gap: 20px; }
+        
+        /* 左侧：Tinder 风格卡片 */
+        .card-section { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .match-card { width: 100%; max-width: 380px; background: var(--card-bg); border-radius: 24px; overflow: hidden; box-shadow: 0 20px 40px rgba(255, 105, 180, 0.15); position: relative; transition: transform 0.3s; }
+        .match-card:hover { transform: translateY(-5px); }
+        .cover-img { width: 100%; height: 400px; object-fit: cover; border-bottom: 4px solid var(--accent); }
+        .card-info { padding: 20px; }
+        .card-name { font-size: 22px; font-weight: bold; margin-bottom: 5px; }
+        .card-tags { font-size: 14px; color: var(--accent); margin-bottom: 15px; }
+        .ai-agent-box { background: var(--bg-color); border-left: 4px solid var(--accent); padding: 10px; font-size: 13px; font-style: italic; border-radius: 4px; margin-bottom: 15px; }
+        .btn-group { display: flex; justify-content: space-around; padding: 0 20px 20px; }
+        .action-btn { width: 60px; height: 60px; border-radius: 50%; border: none; font-size: 24px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: 0.2s; display: flex; justify-content: center; align-items: center;}
+        .btn-dislike { background: #fff; color: #ccc; }
+        .btn-like { background: var(--accent); color: white; }
+        .action-btn:hover { transform: scale(1.1); }
+
+        /* 右侧：聊天界面 */
+        .chat-section { flex: 1; background: var(--card-bg); border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow: hidden; }
+        .chat-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; font-weight: bold; }
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .msg { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 14px; line-height: 1.4; }
+        .msg-left { background: var(--border); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .msg-right { background: var(--accent); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .chat-input-area { padding: 15px; border-top: 1px solid var(--border); display: flex; gap: 10px; }
+        .chat-input-area input { flex: 1; padding: 12px 20px; border-radius: 30px; border: 1px solid var(--border); background: var(--bg-color); color: var(--text-color); outline: none; }
+        .chat-input-area button { padding: 0 20px; border-radius: 30px; border: none; background: var(--accent); color: white; cursor: pointer; font-weight: bold; }
+
+        /* 悬浮 AI 助手 */
+        .ai-assistant { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--accent); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 30px; cursor: pointer; box-shadow: 0 10px 20px rgba(255,105,180,0.4); animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0% { transform: translateY(0); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0); } }
+    </style>
+</head>
+<body data-theme="light">
+
+    <div class="navbar">
+        <div class="logo">🌸 Hometree</div>
+        <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    </div>
+
+    <div class="main-container">
+        <!-- 左侧匹配卡片 -->
+        <div class="card-section">
+            <div class="match-card">
+                <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=800&q=80" class="cover-img" alt="Profile">
+                <div class="card-info">
+                    <div class="card-name">Yuki, 21</div>
+                    <div class="card-tags">🎵 The Smiths, 落日飞车 · 📚 三岛由纪夫</div>
                     
-                    if score > 0:
-                        match_info = st.session_state.users_db[best_match]
-                        st.success(f"匹配成功！与你的精神频率相似度：{score*100:.1f}%")
-                        st.info(f"匹配用户：**{best_match}** (来自 {match_info['location']})\n\nTA 的书影音偏好：{', '.join(match_info['tags'])}")
-                    else:
-                        st.warning("目前没有与你品味重合的人，快去多添加一些标签吧！")
+                    <!-- AI Agent 提取分析 -->
+                    <div class="ai-agent-box">
+                        🤖 <b>AI Agent Insight:</b> "You both love The Smiths and indie films. A great conversation starter: Ask about her favorite track on 'The Queen Is Dead'."
+                    </div>
 
-# 底部
-st.divider()
-st.caption("Hometree MVP. Built with Python & Streamlit.")
+                    <div class="btn-group">
+                        <button class="action-btn btn-dislike" onclick="alert('Passed. Algorithm adjusting...')">✕</button>
+                        <button class="action-btn btn-like" onclick="matched()">♥</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧聊天 (Tinder式匹配后解锁) -->
+        <div class="chat-section" id="chatUI" style="opacity: 0.3; pointer-events: none;">
+            <div class="chat-header">
+                <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=80&q=80" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">
+                Chat with Yuki
+            </div>
+            <div class="chat-messages" id="chatBox">
+                <div class="msg msg-left">Hey! I saw you also listen to Cigarettes After Sex. Their new album is amazing.</div>
+                <div class="msg msg-right" id="aiGeneratedMsg" style="display:none;">That's so cool! We should link our NetEase Cloud Music playlists.</div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" placeholder="Say something nice...">
+                <button>Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 悬浮 AI 助手 -->
+    <div class="ai-assistant" onclick="generateAIMessage()">🤖</div>
+
+    <script>
+        // 白天/黑夜模式切换
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.querySelector('.theme-toggle');
+            if (body.getAttribute('data-theme') === 'light') {
+                body.setAttribute('data-theme', 'dark');
+                btn.innerText = '☀️';
+            } else {
+                body.setAttribute('data-theme', 'light');
+                btn.innerText = '🌙';
+            }
+        }
+
+        // 模拟匹配成功
+        function matched() {
+            const chatUI = document.getElementById('chatUI');
+            chatUI.style.opacity = '1';
+            chatUI.style.pointerEvents = 'auto';
+            alert("🎉 It's a Match! You can now chat with Yuki.");
+        }
+
+        // 模拟 AI Agent 自动生成破冰语
+        function generateAIMessage() {
+            const msgBox = document.getElementById('chatBox');
+            const newMsg = document.createElement('div');
+            newMsg.className = 'msg msg-right';
+            newMsg.innerText = "Hey Yuki, my AI Assistant suggests we both have immaculate taste in 80s indie rock. What's your favorite vinyl?";
+            msgBox.appendChild(newMsg);
+            msgBox.scrollTop = msgBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
+"""
+
+# 将这段高级前端代码嵌入到 Streamlit 页面中
+components.html(html_code, height=900, scrolling=True)
