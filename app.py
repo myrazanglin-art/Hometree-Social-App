@@ -1,9 +1,26 @@
+# Hometree 社交书影音应用
+# 改动摘要：
+# - 保留原有匹配、售卖书籍、动态、论坛、个人主页、MySQL 可选数据源、聊天面板等业务逻辑
+# - 修复 Streamlit Cloud / 运行环境未安装 mysql-connector-python 时的导入崩溃问题
+# - 使用可选导入 + 运行时降级：未安装/未配置 MySQL 时自动回退到本地演示数据
+# 运行方式：
+#   1) pip install streamlit
+#   2) 可选：pip install mysql-connector-python
+#   3) streamlit run app.py
+# 若环境未安装 mysql-connector-python，应用仍可正常启动并显示“当前使用本地演示数据”。
+
 import os
 from urllib.parse import quote
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import streamlit as st
-import mysql.connector
+
+try:
+    import mysql.connector
+    MYSQL_DRIVER_AVAILABLE = True
+except ImportError:
+    mysql = None
+    MYSQL_DRIVER_AVAILABLE = False
 
 st.set_page_config(page_title="Hometree", page_icon="📚", layout="wide")
 
@@ -19,6 +36,8 @@ def fallback_avatar(name: str, accent: str = "7C3AED") -> str:
 
 
 def mysql_available() -> bool:
+    if not MYSQL_DRIVER_AVAILABLE:
+        return False
     try:
         config = {
             "host": os.getenv("MYSQL_HOST", "127.0.0.1"),
@@ -45,27 +64,22 @@ st.markdown(
             background: linear-gradient(135deg, #f5efe8 0%, #f7f1f6 30%, #eef4f7 100%);
             color: #1e1b1b;
         }
-
         .stApp {
             background: linear-gradient(135deg, #f5efe8 0%, #f7f1f6 30%, #eef4f7 100%);
         }
-
         .block-container {
             max-width: 1480px;
             padding-top: 2rem;
             padding-bottom: 2rem;
         }
-
         [data-testid="stSidebar"] {
             background: rgba(255,255,255,0.62);
             backdrop-filter: blur(18px);
             border-right: 1px solid rgba(124, 58, 237, 0.08);
         }
-
         .stRadio > div {
             gap: 0.5rem;
         }
-
         .stRadio label {
             background: rgba(255,255,255,0.65);
             border: 1px solid rgba(77, 71, 66, 0.08);
@@ -74,17 +88,16 @@ st.markdown(
             margin-bottom: 0.4rem;
             font-weight: 600;
         }
-
         .stRadio label > div:first-child {
             display: none;
         }
-
         div[data-testid="stMetricValue"] {
             font-size: 1.2rem;
             font-weight: 700;
         }
-
-        div[data-testid="stButton"] > button {
+        div[data-testid="stButton"] > button,
+        div[data-testid="baseButton-secondary"] > button,
+        button[kind="primary"] {
             border-radius: 14px;
             border: none;
             background: linear-gradient(135deg, #1f2937 0%, #4b5563 100%);
@@ -93,12 +106,10 @@ st.markdown(
             font-weight: 600;
             box-shadow: 0 8px 20px rgba(31, 41, 55, 0.18);
         }
-
         div[data-testid="stButton"] > button:hover {
             filter: brightness(1.03);
             transform: translateY(-1px);
         }
-
         .card-shell {
             background: rgba(255,255,255,0.72);
             border: 1px solid rgba(72,72,72,0.08);
@@ -107,7 +118,6 @@ st.markdown(
             box-shadow: 0 16px 28px rgba(137, 136, 136, 0.08);
             margin-bottom: 1rem;
         }
-
         .profile-hero {
             background:
                 linear-gradient(180deg, rgba(26, 18, 17, 0.06), rgba(26, 18, 17, 0.18)),
@@ -116,13 +126,11 @@ st.markdown(
             padding: 1.2rem;
             min-height: 210px;
         }
-
         .profile-hero .title {
             font-size: 2.2rem;
             font-weight: 800;
             margin-bottom: 0.2rem;
         }
-
         .soft-pill {
             display: inline-block;
             background: rgba(255,255,255,0.8);
@@ -135,15 +143,22 @@ st.markdown(
             margin-bottom: 0.5rem;
             color: #3d3d3d;
         }
-
+        .book-cover {
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+        }
         .friendly-image {
             border-radius: 20px;
             object-fit: cover;
             box-shadow: 0 12px 24px rgba(0,0,0,0.12);
         }
-
         .mini-avatar {
-            width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.7);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.7);
         }
     </style>
     """,
@@ -355,11 +370,14 @@ def seed_data() -> Dict[str, Any]:
 
 def get_data() -> Dict[str, Any]:
     data = seed_data()
-    if not mysql_available():
+    if not MYSQL_DRIVER_AVAILABLE or not mysql_available():
         st.caption("MySQL 未配置，当前使用本地演示数据。")
         return data
 
     try:
+        if not MYSQL_DRIVER_AVAILABLE:
+            raise RuntimeError("MySQL driver is not available")
+
         conn = mysql.connector.connect(
             host=os.getenv("MYSQL_HOST", "127.0.0.1"),
             port=int(os.getenv("MYSQL_PORT", "3306")),
@@ -476,16 +494,15 @@ def render_match_tab(data: Dict[str, Any]) -> None:
             st.session_state.match_index += 1
             if "chat_history" not in st.session_state:
                 st.session_state.chat_history = {}
-            st.session_state.chat_history.setdefault(
-                user["id"],
-                [{"role": "assistant", "text": "你好，我挺喜欢你的阅读列表和歌单风格，想聊聊下一本书。"}],
-            )
+            st.session_state.chat_history.setdefault(user["id"], [
+                {"role": "assistant", "text": "你好，我挺喜欢你的阅读列表和歌单风格，想聊聊下一本书。"}
+            ])
             st.rerun()
 
         if col_b.button("下一位", use_container_width=True):
             st.session_state.match_index += 1
             st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with right:
         st.markdown('<div class="card-shell">', unsafe_allow_html=True)
@@ -503,7 +520,7 @@ def render_match_tab(data: Dict[str, Any]) -> None:
                 past = st.session_state.chat_history.get(u["id"], [])
                 text = past[-1]["text"] if past else "最近很想聊聊书和音乐。"
                 st.caption(text[:30])
-        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     if st.session_state.selected_match is not None:
         render_chat_panel(st.session_state.selected_match)
@@ -531,7 +548,7 @@ def render_market_tab(data: Dict[str, Any]) -> None:
                     st.session_state.selected_book = book
                 if st.button("加入清单", key=f"bag_{book['id']}", use_container_width=True):
                     st.toast(f"已加入《{book['title']}》")
-            st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
     if "selected_book" in st.session_state:
         book = st.session_state.selected_book
@@ -561,7 +578,7 @@ def render_dynamic_tab(data: Dict[str, Any]) -> None:
             if st.button("查看详情", key=f"article_{post['id']}", use_container_width=True):
                 st.session_state.selected_article = post
                 st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
         if "selected_article" in st.session_state:
             st.divider()
@@ -579,7 +596,7 @@ def render_dynamic_tab(data: Dict[str, Any]) -> None:
             if st.button("打开博客", key=f"blog_{blog['id']}", use_container_width=True):
                 st.session_state.selected_blog = blog
                 st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
         if "selected_blog" in st.session_state:
             st.divider()
@@ -604,7 +621,7 @@ def render_forum_tab(data: Dict[str, Any]) -> None:
         if st.button("查看话题", key=f"forum_{thread['id']}", use_container_width=True):
             st.session_state.selected_forum = thread["id"]
             st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     if "selected_forum" in st.session_state:
         thread_id = st.session_state.selected_forum
@@ -633,7 +650,7 @@ def render_profile_tab(data: Dict[str, Any]) -> None:
         st.markdown('<div class="title">%s</div>' % profile["name"], unsafe_allow_html=True)
         st.caption(f"{profile['location']} · 已绑定豆瓣 / 网易云")
         st.write(profile["bio"])
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
     info_cols = st.columns(3)
     info_cols[0].metric("收藏", "126")
