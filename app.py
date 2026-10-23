@@ -230,7 +230,7 @@ html_code = r"""
     <div class="app">
         <header class="top-bar">
             <div class="logo">HOMETREE<span class="logo-mark">.</span></div>
-            <button class="theme-btn" id="themeButton" onclick="toggleTheme()" aria-label="切换外观"><span id="themeIcon">☾</span><span id="themeLabel">深色外观</span></button>
+            <button class="theme-btn" id="themeButton" onclick="toggleTheme()" aria-label="switch mode"><span id="themeIcon">☾</span><span id="themeLabel">dark mode</span></button>
         </header>
         <main class="content">
             <section class="tab-page active" id="page-match">
@@ -252,19 +252,23 @@ html_code = r"""
                 <div class="page-inner">
                     <h1 class="page-heading">书市</h1><p class="page-subheading">让喜欢的书，继续流动。</p>
                     <div class="market-grid">
-                        <article class="book-item"><img src="https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/10.jpg" class="book-cover" alt="撒哈拉的故事封面"><div class="book-info"><div class="book-title">撒哈拉的故事</div><div class="book-meta">三毛 · 9成新 · 北京</div><div class="book-price">¥ 12.00 <button class="buy-btn" onclick="addToBag('撒哈拉的故事')">加入书袋</button></div></div></article>
-                        <article class="book-item"><img src="https://img9.doubanio.com/view/subject/s/public/s27310421.jpg" class="book-cover" alt="我的天才女友封面"><div class="book-info"><div class="book-title">我的天才女友</div><div class="book-meta">费兰特 · 8成新 · 上海</div><div class="book-price">¥ 18.50 <button class="buy-btn" onclick="addToBag('我的天才女友')">加入书袋</button></div></div></article>
-                        <article class="book-item"><img src="https://img3.doubanio.com/view/subject/s/public/s33747736.jpg" class="book-cover" alt="正常人封面"><div class="book-info"><div class="book-title">正常人</div><div class="book-meta">萨莉·鲁尼 · 全新 · 广州</div><div class="book-price">¥ 25.00 <button class="buy-btn" onclick="addToBag('正常人')">加入书袋</button></div></div></article>
-                        <article class="book-item"><img src="https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/9.jpg" class="book-cover" alt="百年孤独封面"><div class="book-info"><div class="book-title">百年孤独</div><div class="book-meta">马尔克斯 · 7成新 · 杭州</div><div class="book-price">¥ 9.90 <button class="buy-btn" onclick="addToBag('百年孤独')">加入书袋</button></div></div></article>
+                        <!-- 撒哈拉 -->
+                        <article class="book-item"><img src="https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/撒哈拉.jpg" class="book-cover" alt="撒哈拉的故事封面"><div class="book-info"><div class="book-title">撒哈拉的故事</div><div class="book-meta">三毛 · 9成新 · 北京</div><div class="book-price">¥ 12.00 <button class="buy-btn" onclick="addToBag('撒哈拉的故事')">加入书袋</button></div></div></article>
+                        <!-- 天才女友 -->
+                        <article class="book-item"><img src="https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/天才.jpg" class="book-cover" alt="我的天才女友封面"><div class="book-info"><div class="book-title">我的天才女友</div><div class="book-meta">费兰特 · 8成新 · 上海</div><div class="book-price">¥ 18.50 <button class="buy-btn" onclick="addToBag('我的天才女友')">加入书袋</button></div></div></article>
+                        <!-- np(正常人) -->
+                        <article class="book-item"><img src="https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/np.jpg" class="book-cover" alt="正常人封面"><div class="book-info"><div class="book-title">正常人</div><div class="book-meta">萨莉·鲁尼 · 全新 · 广州</div><div class="book-price">¥ 25.00 <button class="buy-btn" onclick="addToBag('正常人')">加入书袋</button></div></div></article>
+                        <!-- 百年孤独 -->
+                        <article class="book-item"><img src="https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/百年.jpg" class="book-cover" alt="百年孤独封面"><div class="book-info"><div class="book-title">百年孤独</div><div class="book-meta">马尔克斯 · 7成新 · 杭州</div><div class="book-price">¥ 9.90 <button class="buy-btn" onclick="addToBag('百年孤独')">加入书袋</button></div></div></article>
                     </div>
                 </div>
             </section>
             <section class="tab-page" id="page-community">
                 <div class="page-inner">
-                    <h1 class="page-heading">精神自留地</h1><p class="page-subheading">分享最近打动你的事。</p>
+                    <h1 class="page-heading">论坛</h1><p class="page-subheading">分享最近打动你的事。</p>
                     <div class="xhs-masonry">
                         <article class="xhs-card"><img src="https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/7.jpg" class="xhs-img" style="height:250px" alt="音乐现场"><div class="xhs-content">罗大佑的歌词，句句都是时代挽歌。</div><div class="xhs-author"><img src="https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/8.jpg" class="xhs-avatar" alt="">Yiming</div></article>
-                        <article class="xhs-card"><img src="https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/8.jpg" class="xhs-img" style="height:180px" alt="电影与影像"><div class="xhs-content">重看《搏击俱乐部》，还是被 Tyler 震撼。</div><div class="xhs-author"><img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=60" class="xhs-avatar" alt="">娄烨</div></article>
+                        <article class="xhs-card"><img src="https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/8.jpg" class="xhs-img" style="height:180px" alt="电影与影像"><div class="xhs-content">重看《搏击俱乐部》，还是被 Tyler 震撼。</div><div class="xhs-author"><img src="https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/8.jpg" class="xhs-avatar" alt="">Yiming</div></article>
                         <article class="xhs-card"><img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600" class="xhs-img" style="height:220px" alt="抽象艺术"><div class="xhs-content">Björk 的现场是一场极光祭祀。</div><div class="xhs-author"><img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=60" class="xhs-avatar" alt="">Björk</div></article>
                     </div>
                 </div>
@@ -272,7 +276,7 @@ html_code = r"""
             <section class="tab-page" id="page-profile">
                 <div class="page-inner">
                     <h1 class="page-heading">我的</h1>
-                    <div class="profile-header"><img src="https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/8.jpg" class="avatar" alt="头像"><div><h2>Yiming</h2><p>豆瓣 126本在读 · 网易云 89首私藏</p></div></div>
+                    <div class="profile-header"><img src="https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/avatar.jpg" class="avatar" alt="头像"><div><h2>Yiming</h2><p>豆瓣 126本在读 · 网易云 89首私藏</p></div></div>
                     <div class="settings-grid">
                         <div class="setting-card"><span>隐身模式（不被推荐）</span><div class="toggle active" role="switch" aria-checked="true" tabindex="0" onclick="toggleSwitch(this)" onkeydown="toggleOnKey(event,this)"></div></div>
                         <div class="setting-card"><span>屏蔽 / 拉黑管理</span><span class="setting-action" onclick="alert('已屏蔽 2 人')">查看（2）</span></div>
@@ -304,8 +308,8 @@ html_code = r"""
             { id:"emo", name:"Midwest Emo", age:22, img:"https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/6.jpg", tags:["Math Rock","Drop D"], quote:"Let's play in drop D.", ai:"效果器男孩。" },
             { id:"muse", name:"Matt Bellamy", age:45, img:"https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600", tags:["Muse","Space Rock"], quote:"This is the last time.", ai:"科幻与反乌托邦。" },
             { id:"aphex", name:"Aphex Twin", age:52, img:"https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600", tags:["IDM","Ambient"], quote:"Weird music.", ai:"Max/MSP 同好。" },
-            { id:"kurt", name:"Kurt Cobain", age:27, img:"https://images.unsplash.com/photo-1520637836862-4d197d17c90a?w=600", tags:["Grunge","Nirvana"], quote:"I'd rather be hated.", ai:"聊聊地下厂牌。" },
-            { id:"kevin", name:"Kevin Shields", age:60, img:"https://images.unsplash.com/photo-1516280440502-863a346513c1?w=600", tags:["Shoegaze","MBV"], quote:"Loveless is a wall.", ai:"噪音墙之神。" }
+            { id:"kurt", name:"Kurt Cobain", age:27, img:"https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/7.jpg", tags:["Grunge","Nirvana"], quote:"I'd rather be hated.", ai:"聊聊地下厂牌。" },
+            { id:"kevin", name:"Kevin Shields", age:60, img:"https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/8.jpg", tags:["Shoegaze","MBV"], quote:"Loveless is a wall.", ai:"噪音墙之神。" }
         ];
         let currentIndex = 0;
         let matchedUsers = JSON.parse(localStorage.getItem("hometree_matches") || "[]");
@@ -489,7 +493,7 @@ html_code = r"""
         function updateThemeButton() {
             const dark = document.body.dataset.theme === "dark";
             document.getElementById("themeIcon").textContent = dark ? "☀" : "☾";
-            document.getElementById("themeLabel").textContent = dark ? "浅色外观" : "深色外观";
+            document.getElementById("themeLabel").textContent = dark ? "light mode" : "night mode";
         }
         function toggleSwitch(element) {
             element.classList.toggle("active");
