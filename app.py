@@ -252,10 +252,10 @@ html_code = r"""
                 <div class="page-inner">
                     <h1 class="page-heading">书市</h1><p class="page-subheading">让喜欢的书，继续流动。</p>
                     <div class="market-grid">
-                        <article class="book-item"><img src="https://img9.doubanio.com/view/subject/s/public/s28385152.jpg" class="book-cover" alt="撒哈拉的故事封面"><div class="book-info"><div class="book-title">撒哈拉的故事</div><div class="book-meta">三毛 · 9成新 · 北京</div><div class="book-price">¥ 12.00 <button class="buy-btn" onclick="addToBag('撒哈拉的故事')">加入书袋</button></div></div></article>
+                        <article class="book-item"><img src="https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/10.jpg" class="book-cover" alt="撒哈拉的故事封面"><div class="book-info"><div class="book-title">撒哈拉的故事</div><div class="book-meta">三毛 · 9成新 · 北京</div><div class="book-price">¥ 12.00 <button class="buy-btn" onclick="addToBag('撒哈拉的故事')">加入书袋</button></div></div></article>
                         <article class="book-item"><img src="https://img9.doubanio.com/view/subject/s/public/s27310421.jpg" class="book-cover" alt="我的天才女友封面"><div class="book-info"><div class="book-title">我的天才女友</div><div class="book-meta">费兰特 · 8成新 · 上海</div><div class="book-price">¥ 18.50 <button class="buy-btn" onclick="addToBag('我的天才女友')">加入书袋</button></div></div></article>
                         <article class="book-item"><img src="https://img3.doubanio.com/view/subject/s/public/s33747736.jpg" class="book-cover" alt="正常人封面"><div class="book-info"><div class="book-title">正常人</div><div class="book-meta">萨莉·鲁尼 · 全新 · 广州</div><div class="book-price">¥ 25.00 <button class="buy-btn" onclick="addToBag('正常人')">加入书袋</button></div></div></article>
-                        <article class="book-item"><img src="https://img1.doubanio.com/view/subject/s/public/s27237850.jpg" class="book-cover" alt="百年孤独封面"><div class="book-info"><div class="book-title">百年孤独</div><div class="book-meta">马尔克斯 · 7成新 · 杭州</div><div class="book-price">¥ 9.90 <button class="buy-btn" onclick="addToBag('百年孤独')">加入书袋</button></div></div></article>
+                        <article class="book-item"><img src="https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/9.jpg" class="book-cover" alt="百年孤独封面"><div class="book-info"><div class="book-title">百年孤独</div><div class="book-meta">马尔克斯 · 7成新 · 杭州</div><div class="book-price">¥ 9.90 <button class="buy-btn" onclick="addToBag('百年孤独')">加入书袋</button></div></div></article>
                     </div>
                 </div>
             </section>
@@ -263,8 +263,8 @@ html_code = r"""
                 <div class="page-inner">
                     <h1 class="page-heading">精神自留地</h1><p class="page-subheading">分享最近打动你的事。</p>
                     <div class="xhs-masonry">
-                        <article class="xhs-card"><img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600" class="xhs-img" style="height:250px" alt="音乐现场"><div class="xhs-content">罗大佑的歌词，句句都是时代挽歌。</div><div class="xhs-author"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=60" class="xhs-avatar" alt="">Yiming</div></article>
-                        <article class="xhs-card"><img src="https://images.unsplash.com/photo-1520637836862-4d197d17c90a?w=600" class="xhs-img" style="height:180px" alt="电影与影像"><div class="xhs-content">重看《搏击俱乐部》，还是被 Tyler 震撼。</div><div class="xhs-author"><img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=60" class="xhs-avatar" alt="">娄烨</div></article>
+                        <article class="xhs-card"><img src="https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/7.jpg" class="xhs-img" style="height:250px" alt="音乐现场"><div class="xhs-content">罗大佑的歌词，句句都是时代挽歌。</div><div class="xhs-author"><img src="https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/8.jpg" class="xhs-avatar" alt="">Yiming</div></article>
+                        <article class="xhs-card"><img src="https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/8.jpg" class="xhs-img" style="height:180px" alt="电影与影像"><div class="xhs-content">重看《搏击俱乐部》，还是被 Tyler 震撼。</div><div class="xhs-author"><img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=60" class="xhs-avatar" alt="">娄烨</div></article>
                         <article class="xhs-card"><img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600" class="xhs-img" style="height:220px" alt="抽象艺术"><div class="xhs-content">Björk 的现场是一场极光祭祀。</div><div class="xhs-author"><img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=60" class="xhs-avatar" alt="">Björk</div></article>
                     </div>
                 </div>
@@ -272,7 +272,7 @@ html_code = r"""
             <section class="tab-page" id="page-profile">
                 <div class="page-inner">
                     <h1 class="page-heading">我的</h1>
-                    <div class="profile-header"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200" class="avatar" alt="头像"><div><h2>Yiming</h2><p>豆瓣 126本在读 · 网易云 89首私藏</p></div></div>
+                    <div class="profile-header"><img src="https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/8.jpg" class="avatar" alt="头像"><div><h2>Yiming</h2><p>豆瓣 126本在读 · 网易云 89首私藏</p></div></div>
                     <div class="settings-grid">
                         <div class="setting-card"><span>隐身模式（不被推荐）</span><div class="toggle active" role="switch" aria-checked="true" tabindex="0" onclick="toggleSwitch(this)" onkeydown="toggleOnKey(event,this)"></div></div>
                         <div class="setting-card"><span>屏蔽 / 拉黑管理</span><span class="setting-action" onclick="alert('已屏蔽 2 人')">查看（2）</span></div>
@@ -296,12 +296,12 @@ html_code = r"""
     </section>
     <script>
         const users = [
-            { id:"louye", name:"娄烨", age:58, img:"https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600", tags:["苏州河","推拿"], quote:"如果有一天我走了...", ai:"适合在雨天聊贾宏声。" },
-            { id:"tyler", name:"Tyler Durden", age:30, img:"https://images.unsplash.com/photo-1520637836862-4d197d17c90a?w=600", tags:["Fight Club","Nihilism"], quote:"You are not your job.", ai:"别聊工作，聊地下搏击。" },
-            { id:"morrissey", name:"Morrissey", age:64, img:"https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600", tags:["The Smiths","Indie"], quote:"There is a light...", ai:"深夜 emo 必备。" },
-            { id:"bjork", name:"Björk", age:58, img:"https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600", tags:["Art Pop","实验电子"], quote:"I'm the spark.", ai:"冰岛极光与实验电子。" },
-            { id:"lotayu", name:"罗大佑", age:68, img:"https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600", tags:["鹿港小镇","时代"], quote:"台北不是我的家。", ai:"午夜聊华语启蒙。" },
-            { id:"emo", name:"Midwest Emo", age:22, img:"https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=600", tags:["Math Rock","Drop D"], quote:"Let's play in drop D.", ai:"效果器男孩。" },
+            { id:"louye", name:"娄烨", age:58, img:"https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/1.jpg", tags:["苏州河","推拿"], quote:"如果有一天我走了...", ai:"适合在雨天聊贾宏声。" },
+            { id:"tyler", name:"Tyler Durden", age:30, img:"https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/2.jpg", tags:["Fight Club","Nihilism"], quote:"You are not your job.", ai:"别聊工作，聊地下搏击。" },
+            { id:"morrissey", name:"Morrissey", age:64, img:"https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/3.jpg", tags:["The Smiths","Indie"], quote:"There is a light...", ai:"深夜 emo 必备。" },
+            { id:"bjork", name:"Björk", age:58, img:"https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/4.jpg", tags:["Art Pop","实验电子"], quote:"I'm the spark.", ai:"冰岛极光与实验电子。" },
+            { id:"lotayu", name:"罗大佑", age:68, img:"https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/5.jpg", tags:["鹿港小镇","时代"], quote:"台北不是我的家。", ai:"午夜聊华语启蒙。" },
+            { id:"emo", name:"Midwest Emo", age:22, img:"https://raw.githubusercontent.com/myrazanglin-art/Hometree-Social-App/main/images/6.jpg", tags:["Math Rock","Drop D"], quote:"Let's play in drop D.", ai:"效果器男孩。" },
             { id:"muse", name:"Matt Bellamy", age:45, img:"https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600", tags:["Muse","Space Rock"], quote:"This is the last time.", ai:"科幻与反乌托邦。" },
             { id:"aphex", name:"Aphex Twin", age:52, img:"https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600", tags:["IDM","Ambient"], quote:"Weird music.", ai:"Max/MSP 同好。" },
             { id:"kurt", name:"Kurt Cobain", age:27, img:"https://images.unsplash.com/photo-1520637836862-4d197d17c90a?w=600", tags:["Grunge","Nirvana"], quote:"I'd rather be hated.", ai:"聊聊地下厂牌。" },
