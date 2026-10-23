@@ -1,14 +1,3 @@
-# Hometree 社交书影音应用
-# 改动摘要：
-# - 保留原有匹配、售卖书籍、动态、论坛、个人主页、MySQL 可选数据源、聊天面板等业务逻辑
-# - 修复 Streamlit Cloud / 运行环境未安装 mysql-connector-python 时的导入崩溃问题
-# - 使用可选导入 + 运行时降级：未安装/未配置 MySQL 时自动回退到本地演示数据
-# 运行方式：
-#   1) pip install streamlit
-#   2) 可选：pip install mysql-connector-python
-#   3) streamlit run app.py
-# 若环境未安装 mysql-connector-python，应用仍可正常启动并显示“当前使用本地演示数据”。
-
 import os
 from urllib.parse import quote
 from typing import Any, Dict, List
@@ -62,103 +51,148 @@ st.markdown(
         html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #f5efe8 0%, #f7f1f6 30%, #eef4f7 100%);
-            color: #1e1b1b;
+            color: #1f2937;
         }
+
         .stApp {
             background: linear-gradient(135deg, #f5efe8 0%, #f7f1f6 30%, #eef4f7 100%);
         }
+
         .block-container {
             max-width: 1480px;
-            padding-top: 2rem;
+            padding-top: 1.8rem;
             padding-bottom: 2rem;
         }
+
         [data-testid="stSidebar"] {
-            background: rgba(255,255,255,0.62);
+            background: rgba(255,255,255,0.55);
             backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
             border-right: 1px solid rgba(124, 58, 237, 0.08);
         }
-        .stRadio > div {
+
+        .stTabs [role="tablist"] {
             gap: 0.5rem;
         }
-        .stRadio label {
-            background: rgba(255,255,255,0.65);
-            border: 1px solid rgba(77, 71, 66, 0.08);
-            border-radius: 16px;
-            padding: 0.75rem 1rem;
-            margin-bottom: 0.4rem;
+
+        .stTabs [role="tab"] {
+            border-radius: 12px;
+            padding: 0.5rem 0.9rem;
+            color: #374151;
             font-weight: 600;
         }
-        .stRadio label > div:first-child {
-            display: none;
+
+        .stTabs [role="tab"][aria-selected="true"] {
+            background: rgba(124, 58, 237, 0.1);
+            color: #4c1d95;
         }
+
         div[data-testid="stMetricValue"] {
             font-size: 1.2rem;
             font-weight: 700;
         }
-        div[data-testid="stButton"] > button,
-        div[data-testid="baseButton-secondary"] > button,
-        button[kind="primary"] {
+
+        .glass-card {
+            background: rgba(255,255,255,0.66);
+            border: 1px solid rgba(31, 41, 55, 0.06);
+            border-radius: 26px;
+            padding: 1rem;
+            box-shadow: 0 16px 28px rgba(15, 23, 42, 0.08);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            margin-bottom: 1rem;
+        }
+
+        .hero-panel {
+            background:
+                linear-gradient(120deg, rgba(255,255,255,0.18), rgba(124,58,237,0.08)),
+                url('https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;
+            border-radius: 30px;
+            padding: 1.2rem;
+            min-height: 200px;
+            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: 0 16px 30px rgba(128, 90, 213, 0.12);
+        }
+
+        .hero-title {
+            font-size: clamp(2rem, 2.8vw, 3rem);
+            font-weight: 800;
+            color: #111827;
+            margin-top: 1rem;
+        }
+
+        .soft-pill {
+            display: inline-block;
+            padding: 0.42rem 0.75rem;
+            background: rgba(255,255,255,0.7);
+            color: #374151;
+            border-radius: 999px;
+            border: 1px solid rgba(15, 23, 42, 0.06);
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin: 0.15rem 0.35rem 0.2rem 0;
+        }
+
+        .book-cover,
+        .media-cover,
+        .podcast-cover {
+            border-radius: 20px;
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
+            object-fit: cover;
+        }
+
+        .mini-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.8);
+        }
+
+        .compact-card {
+            background: rgba(255,255,255,0.68);
+            border: 1px solid rgba(15, 23, 42, 0.06);
+            border-radius: 20px;
+            padding: 0.75rem 0.85rem;
+            box-shadow: 0 10px 16px rgba(15, 23, 42, 0.04);
+        }
+
+        .forum-item:hover,
+        .card-shell:hover {
+            transform: translateY(-1px);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .stButton > button {
             border-radius: 14px;
             border: none;
+            color: #ffffff;
             background: linear-gradient(135deg, #1f2937 0%, #4b5563 100%);
-            color: white;
-            padding: 0.65rem 1rem;
             font-weight: 600;
-            box-shadow: 0 8px 20px rgba(31, 41, 55, 0.18);
+            padding: 0.65rem 1rem;
+            box-shadow: 0 8px 18px rgba(31, 41, 55, 0.14);
         }
-        div[data-testid="stButton"] > button:hover {
+
+        .stButton > button:hover {
             filter: brightness(1.03);
             transform: translateY(-1px);
         }
-        .card-shell {
-            background: rgba(255,255,255,0.72);
-            border: 1px solid rgba(72,72,72,0.08);
-            border-radius: 26px;
-            padding: 1rem;
-            box-shadow: 0 16px 28px rgba(137, 136, 136, 0.08);
-            margin-bottom: 1rem;
+
+        .secondary-btn > button {
+            background: rgba(255,255,255,0.7) !important;
+            color: #1f2937 !important;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            box-shadow: none;
         }
-        .profile-hero {
-            background:
-                linear-gradient(180deg, rgba(26, 18, 17, 0.06), rgba(26, 18, 17, 0.18)),
-                url('https://images.unsplash.com/photo-1516280440502-863a346513c1?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;
-            border-radius: 30px;
-            padding: 1.2rem;
-            min-height: 210px;
-        }
-        .profile-hero .title {
-            font-size: 2.2rem;
-            font-weight: 800;
-            margin-bottom: 0.2rem;
-        }
-        .soft-pill {
-            display: inline-block;
-            background: rgba(255,255,255,0.8);
-            border: 1px solid rgba(0,0,0,0.04);
-            border-radius: 999px;
-            padding: 0.35rem 0.75rem;
-            font-size: 0.76rem;
-            font-weight: 600;
-            margin-right: 0.5rem;
-            margin-bottom: 0.5rem;
-            color: #3d3d3d;
-        }
-        .book-cover {
-            border-radius: 18px;
-            overflow: hidden;
-            box-shadow: 0 10px 24px rgba(0,0,0,0.12);
-        }
-        .friendly-image {
-            border-radius: 20px;
-            object-fit: cover;
-            box-shadow: 0 12px 24px rgba(0,0,0,0.12);
-        }
-        .mini-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid rgba(255,255,255,0.7);
+
+        @media (max-width: 768px) {
+            .block-container {
+                padding-left: 0.7rem;
+                padding-right: 0.7rem;
+            }
+            .hero-panel {
+                min-height: 180px;
+            }
         }
     </style>
     """,
@@ -171,39 +205,39 @@ def seed_data() -> Dict[str, Any]:
         "profile": {
             "name": "Yiming",
             "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80",
-            "bio": "喜欢书和音乐，偏爱安静、有温度的生活方式。把每一次阅读和聆听都当成跟城市对话。",
-            "location": "杭州",
+            "bio": "to be or not to be.",
+            "location": "上海",
             "social": {
-                "douban": "豆瓣：已绑定《书影音日记》· 126 条收藏",
-                "netease": "网易云：最近在听《城市夜归》、民谣与电子",
+                "douban": "豆瓣：已绑定· 126 条读过",
+                "netease": "网易云：最近在听《浮躁》、techno",
             },
             "highlights": [
                 "喜欢安静的独立出版",
                 "收藏偏电影与文学的城市叙事",
-                "正在读《在路上》《岛上书店》",
+                "正在读《看见》《精神疾病与心理学》",
             ],
         },
         "users": [
             {
                 "id": "louye",
-                "name": "楼野",
+                "name": "67小子",
                 "age": 28,
                 "img": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=900&q=80",
-                "tags": ["文学", "独立书店", "慢生活"],
-                "quote": "喜欢在雨天走遍每一家书店，听书页翻动的声音。",
-                "ai": "偏爱日系文学、城市故事和安静的氛围音乐。",
+                "tags": ["67", "67", "67"],
+                "quote": "six seven",
+                "ai": "网感少萝。",
                 "douban": "豆瓣：已收藏 132 本书与 96 部电影",
-                "netease": "网易云：最爱城市、民谣和爵士。",
+                "netease": "网易云：最爱爵士。",
             },
             {
                 "id": "bjork",
-                "name": "Bjork",
+                "name": "冰岛宝马",
                 "age": 34,
                 "img": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=900&q=80",
                 "tags": ["Art Pop", "电子", "视觉艺术"],
                 "quote": "I am the spark, and the sound is my map.",
                 "ai": "在艺术和音乐之间来回穿梭，喜欢具有实验性的表达。",
-                "douban": "豆瓣：重度电影与纪录片收藏者",
+                "douban": "豆瓣：蓝色妖姬",
                 "netease": "网易云：电子、实验和氛围音乐收藏夹",
             },
             {
@@ -213,13 +247,13 @@ def seed_data() -> Dict[str, Any]:
                 "img": "https://images.unsplash.com/photo-1520637836862-4d197d17c90a?auto=format&fit=crop&w=900&q=80",
                 "tags": ["Fight Club", "荒诞", "反主流"],
                 "quote": "You are not your job.",
-                "ai": "擅长破坏常规、重构日常，阅读偏哲学与反乌托邦。",
+                "ai": "如果我是布拉德皮特你会爱我吗。",
                 "douban": "豆瓣：地域文化与电影史有较深关注",
                 "netease": "网易云：重度摇滚与冷门独立歌单",
             },
             {
                 "id": "lotayu",
-                "name": "洛塔雨",
+                "name": "dj小女孩",
                 "age": 27,
                 "img": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=900&q=80",
                 "tags": ["治愈", "旅行", "日记"],
@@ -276,13 +310,24 @@ def seed_data() -> Dict[str, Any]:
             },
             {
                 "id": 5,
+                "title": "天才女友",
+                "author": "苏打绿·今何在",
+                "price": 34.0,
+                "city": "深圳",
+                "cover": "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=900&q=80",
+                "tags": ["青春", "成长", "文学"],
+                "similar": ["房思琪的初恋乐园", "向左走·向右走", "你好，旧时光"],
+                "summary": "关于青春、才华与关系的温柔、尖锐又真实的书写。",
+            },
+            {
+                "id": 6,
                 "title": "房思琪的初恋乐园",
                 "author": "林奕含",
                 "price": 36.0,
                 "city": "深圳",
                 "cover": "https://img9.doubanio.com/view/subject/s/public/s28065015.jpg",
                 "tags": ["文学", "成长"],
-                "similar": ["围城", "我们仨", "失踪的孩子"],
+                "similar": ["围城", "我们的三十年", "失踪的孩子"],
                 "summary": "一段关于青春创伤与自我救赎的书写，在极致的情绪里发光。",
             },
         ],
@@ -312,20 +357,36 @@ def seed_data() -> Dict[str, Any]:
                 "content": "每次走进旧书店，都会自然放慢脚步。人们在棚架之间翻书，像在悄悄更新自己的人生地图。不同于快节奏电商，旧书店的魅力在于偶遇与不急切。",
             },
         ],
-        "blogs": [
+        "podcasts": [
             {
                 "id": 201,
-                "title": "一个城市的书店地图",
-                "cover": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1200&q=80",
-                "summary": "整理最近两个月走过的书店与咖啡馆，记录那些让我停下来阅读的地方。",
-                "content": "我去过的每一家书店，都像一座小型的私人图书馆。这里的书架不只是摆放物品，而是撑起一个人的精神休息区。",
+                "title": "《城市夜归》：一场夜跑前的温柔降噪",
+                "host": "Yiming",
+                "cover": "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
+                "summary": "12 分钟的夜晚散步声景，带着轻微电子与民谣的呼吸感。",
+                "duration": "12:38",
+                "src": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+                "type": "podcast",
             },
             {
                 "id": 202,
-                "title": "和音乐一起出发：城市散步清单",
-                "cover": "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
-                "summary": "把一段不长不短的散步，放进一个轻微失重的回响里。",
-                "content": "散步不一定要有目的，也不一定要到达某处；它是一种把情绪沉下来、把空白留出来的方式。音乐在其中起到桥梁作用。",
+                "title": "书店漫谈：旧书与温度",
+                "host": "楼野",
+                "cover": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1200&q=80",
+                "summary": "从旧书店到独立影院，谈谈阅读与城市的关系。",
+                "duration": "18:25",
+                "src": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+                "type": "podcast",
+            },
+            {
+                "id": 203,
+                "title": "晚安读书会：一本书如何改变一段生活",
+                "host": "洛塔雨",
+                "cover": "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&w=1200&q=80",
+                "summary": "一本好书不是答案，而是让你更清楚看见自己。",
+                "duration": "15:02",
+                "src": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+                "type": "podcast",
             },
         ],
         "forum_threads": [
@@ -338,8 +399,8 @@ def seed_data() -> Dict[str, Any]:
             },
             {
                 "id": 302,
-                "title": "听歌像在做一场城市漫游，推荐你最近的片单",
-                "tag": "音乐",
+                "title": "今晚发一档很适合散步的播客：城市夜归",
+                "tag": "播客",
                 "meta": "26 小时前 · 21 回复",
                 "desc": "想知道大家会用什么歌单陪散步、陪雨夜、陪写作，我想做一个慢节奏清单。",
             },
@@ -435,11 +496,11 @@ def get_data() -> Dict[str, Any]:
 
 def render_chat_panel(user: Dict[str, Any]) -> None:
     with st.sidebar:
-        st.markdown("<div class='card-shell'>", unsafe_allow_html=True)
+        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
         st.subheader(f"聊天 · {user['name']}")
         st.image(user.get("img") or fallback_avatar(user["name"]), width=70)
-        st.caption(user["douban"])
-        st.caption(user["netease"])
+        st.caption(user.get("douban", ""))
+        st.caption(user.get("netease", ""))
 
         if "chat_history" not in st.session_state:
             st.session_state.chat_history = {}
@@ -456,9 +517,9 @@ def render_chat_panel(user: Dict[str, Any]) -> None:
         if prompt:
             history = st.session_state.chat_history.setdefault(user["id"], [])
             history.append({"role": "user", "text": prompt})
-            history.append({"role": "assistant", "text": "我也挺喜欢这类书和音乐，我可以把你最近在看的清单发给你。"})
+            history.append({"role": "assistant", "text": "我挺喜欢你的书单和梳理方式，下一本书我想先试试你最近在看的那种。"})
             st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
 
 def render_match_tab(data: Dict[str, Any]) -> None:
@@ -476,36 +537,40 @@ def render_match_tab(data: Dict[str, Any]) -> None:
     if st.session_state.match_index >= len(users):
         st.session_state.match_index = 0
 
-    left, right = st.columns([2, 1])
+    left, right = st.columns([2.1, 1.0])
     with left:
         user = users[st.session_state.match_index]
-        st.markdown('<div class="card-shell">', unsafe_allow_html=True)
+        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
         st.image(user["img"], use_container_width=True, clamp=True)
         st.subheader(user["name"])
         st.caption(f"{user['age']} 岁 · {' / '.join(user['tags'])}")
         st.markdown(f"> {user['quote']}")
         st.write(user["ai"])
-        col_a, col_b = st.columns(2)
 
-        if col_a.button("想认识", use_container_width=True):
+        match_bar = st.progress(72)
+        st.caption("匹配度：72%")
+
+        col_a, col_b = st.columns(2)
+        if col_a.button("♥ 想认识", use_container_width=True):
             if user["id"] not in [u["id"] for u in st.session_state.matched_users]:
                 st.session_state.matched_users.append(user)
             st.session_state.selected_match = user
             st.session_state.match_index += 1
             if "chat_history" not in st.session_state:
                 st.session_state.chat_history = {}
-            st.session_state.chat_history.setdefault(user["id"], [
-                {"role": "assistant", "text": "你好，我挺喜欢你的阅读列表和歌单风格，想聊聊下一本书。"}
-            ])
+            st.session_state.chat_history.setdefault(
+                user["id"],
+                [{"role": "assistant", "text": "你好，我挺喜欢你的阅读列表和歌单风格，想聊聊下一本书。"}],
+            )
             st.rerun()
 
-        if col_b.button("下一位", use_container_width=True):
+        if col_b.button("✕ 下一位", use_container_width=True):
             st.session_state.match_index += 1
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
     with right:
-        st.markdown('<div class="card-shell">', unsafe_allow_html=True)
+        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
         st.subheader("已匹配")
         if not st.session_state.matched_users:
             st.info("还没有匹配到朋友，先看看下一位。")
@@ -528,26 +593,24 @@ def render_match_tab(data: Dict[str, Any]) -> None:
 
 def render_market_tab(data: Dict[str, Any]) -> None:
     st.title("售卖书籍")
-    st.caption("精选书单，带有书籍封面、简介和相似推荐。")
+    st.caption("精选书单，带有封面、简介和相似推荐。")
 
-    for book in data["books"]:
-        with st.container():
-            st.markdown('<div class="card-shell">', unsafe_allow_html=True)
-            cols = st.columns([1, 3])
-            with cols[0]:
-                st.image(book["cover"], width=160, output_format="JPEG")
-            with cols[1]:
-                st.subheader(book["title"])
-                st.caption(f"{book['author']} · {book['city']} · {' / '.join(book['tags'])}")
-                st.write(book["summary"])
-                st.write("相似推荐：", " · ".join(book["similar"]))
-                c1, c2, c3 = st.columns([1, 1, 1])
-                c1.metric("价格", f"¥{book['price']:.2f}")
-                c2.metric("状态", "可寄送")
-                if c3.button("详情", key=f"detail_{book['id']}", use_container_width=True):
-                    st.session_state.selected_book = book
-                if st.button("加入清单", key=f"bag_{book['id']}", use_container_width=True):
-                    st.toast(f"已加入《{book['title']}》")
+    books = data["books"]
+    grid = st.columns(3)
+    for idx, book in enumerate(books):
+        with grid[idx % 3]:
+            st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+            st.image(book["cover"], use_container_width=True, output_format="JPEG")
+            st.subheader(book["title"])
+            st.caption(f"{book['author']} · {book['city']}")
+            st.markdown(f"<div class='soft-pill'>¥{book['price']:.2f}</div>", unsafe_allow_html=True)
+            for tag in book["tags"][:2]:
+                st.markdown(f"<span class='soft-pill'>{tag}</span>", unsafe_allow_html=True)
+            st.write(book["summary"])
+            if st.button("详情", key=f"detail_{book['id']}", use_container_width=True):
+                st.session_state.selected_book = book
+            if st.button("加入清单", key=f"bag_{book['id']}", use_container_width=True):
+                st.toast(f"已加入《{book['title']}》")
             st.markdown('</div>', unsafe_allow_html=True)
 
     if "selected_book" in st.session_state:
@@ -566,11 +629,11 @@ def render_market_tab(data: Dict[str, Any]) -> None:
 
 def render_dynamic_tab(data: Dict[str, Any]) -> None:
     st.title("动态")
-    article_tab, blog_tab = st.tabs(["文章", "博客"])
+    article_tab, podcast_tab = st.tabs(["文章", "播客"])
 
     with article_tab:
         for post in data["articles"]:
-            st.markdown('<div class="card-shell">', unsafe_allow_html=True)
+            st.markdown('<div class="glass-card">', unsafe_allow_html=True)
             st.image(post["cover"], use_container_width=True)
             st.subheader(post["title"])
             st.caption(f"{post['category']} · 2 分钟阅读")
@@ -581,31 +644,30 @@ def render_dynamic_tab(data: Dict[str, Any]) -> None:
             st.markdown('</div>', unsafe_allow_html=True)
 
         if "selected_article" in st.session_state:
-            st.divider()
             post = st.session_state.selected_article
+            st.divider()
             st.subheader(post["title"])
             st.caption(post["category"])
             st.write(post["content"])
 
-    with blog_tab:
-        for blog in data["blogs"]:
-            st.markdown('<div class="card-shell">', unsafe_allow_html=True)
-            st.image(blog["cover"], use_container_width=True)
-            st.subheader(blog["title"])
-            st.write(blog["summary"])
-            if st.button("打开博客", key=f"blog_{blog['id']}", use_container_width=True):
-                st.session_state.selected_blog = blog
+    with podcast_tab:
+        for pod in data["podcasts"]:
+            st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+            st.image(pod["cover"], use_container_width=True)
+            st.subheader(pod["title"])
+            st.caption(f"{pod['host']} · {pod['duration']}")
+            st.write(pod["summary"])
+            if st.button("播放节目", key=f"pod_{pod['id']}", use_container_width=True):
+                st.session_state.selected_podcast = pod
                 st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
-        if "selected_blog" in st.session_state:
+        if "selected_podcast" in st.session_state:
+            pod = st.session_state.selected_podcast
             st.divider()
-            blog = st.session_state.selected_blog
-            st.subheader(blog["title"])
-            if "content" in blog:
-                st.write(blog["content"])
-            else:
-                st.write(blog["summary"])
+            st.subheader(pod["title"])
+            st.caption(f"主持：{pod['host']} · 时长：{pod['duration']}")
+            st.audio(pod.get("src", ""), format="audio/mp3")
 
 
 def render_forum_tab(data: Dict[str, Any]) -> None:
@@ -613,14 +675,17 @@ def render_forum_tab(data: Dict[str, Any]) -> None:
     st.caption("可定制的小型社区，内容可点开查看回复。")
 
     for thread in data["forum_threads"]:
-        st.markdown('<div class="card-shell">', unsafe_allow_html=True)
+        st.markdown('<div class="glass-card forum-item">', unsafe_allow_html=True)
         st.caption(thread["tag"])
         st.subheader(thread["title"])
         st.write(thread["desc"])
         st.caption(thread["meta"])
-        if st.button("查看话题", key=f"forum_{thread['id']}", use_container_width=True):
+        c1, c2, c3 = st.columns([1, 1, 1])
+        if c1.button("查看话题", key=f"forum_{thread['id']}", use_container_width=True):
             st.session_state.selected_forum = thread["id"]
             st.rerun()
+        c2.button("回复数", key=f"replies_{thread['id']}", use_container_width=True)
+        c3.button("收藏", key=f"favorite_{thread['id']}", use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
     if "selected_forum" in st.session_state:
@@ -629,9 +694,10 @@ def render_forum_tab(data: Dict[str, Any]) -> None:
         st.divider()
         st.subheader(f"主题：{thread['title']}")
         st.write(thread["desc"])
-        for reply in data["forum_replies"].get(thread_id, []):
-            with st.chat_message("assistant"):
-                st.write(f"{reply['user']}：{reply['text']}")
+        if thread_id in data["forum_replies"]:
+            for reply in data["forum_replies"].get(thread_id, []):
+                with st.chat_message("assistant"):
+                    st.write(f"{reply['user']}：{reply['text']}")
         prompt = st.chat_input("写回复…")
         if prompt:
             data["forum_replies"].setdefault(thread_id, []).append({"user": "你", "text": prompt})
@@ -642,12 +708,12 @@ def render_profile_tab(data: Dict[str, Any]) -> None:
     profile = data["profile"]
     st.title("个人主页")
 
-    st.markdown('<div class="profile-hero">', unsafe_allow_html=True)
-    col1, col2 = st.columns([1, 3])
-    with col1:
+    st.markdown('<div class="hero-panel">', unsafe_allow_html=True)
+    c1, c2 = st.columns([1, 3])
+    with c1:
         st.image(profile["avatar"], width=180)
-    with col2:
-        st.markdown('<div class="title">%s</div>' % profile["name"], unsafe_allow_html=True)
+    with c2:
+        st.markdown(f'<div class="hero-title">{profile["name"]}</div>', unsafe_allow_html=True)
         st.caption(f"{profile['location']} · 已绑定豆瓣 / 网易云")
         st.write(profile["bio"])
     st.markdown('</div>', unsafe_allow_html=True)
@@ -673,6 +739,19 @@ def render_profile_tab(data: Dict[str, Any]) -> None:
 
     st.subheader("兴趣标签")
     st.markdown(" ".join(f'<span class="soft-pill">{tag}</span>' for tag in profile["highlights"]), unsafe_allow_html=True)
+
+    st.subheader("正在听")
+    podcast = data["podcasts"][0]
+    cover_col, info_col = st.columns([1, 3])
+    cover_col.image(podcast["cover"], width=120)
+    with info_col:
+        st.write(f"**{podcast['title']}**")
+        st.caption(f"{podcast['host']} · {podcast['duration']}")
+        st.progress(62)
+        p1, p2, p3 = st.columns(3)
+        p1.button("▶ 播放", key="play_demo", use_container_width=True)
+        p2.button("⏸ 暂停", key="pause_demo", use_container_width=True)
+        p3.button("⏭ 下一首", key="next_demo", use_container_width=True)
 
 
 pages = {
