@@ -1,513 +1,677 @@
-import streamlit as st
-import streamlit.components.v1 as components
+import os
+from urllib.parse import quote
+from typing import Any, Dict
 
-st.set_page_config(page_title="Hometree", layout="wide", initial_sidebar_state="collapsed")
+import streamlit as st
+import mysql.connector
+
+st.set_page_config(page_title="Hometree", page_icon="📚", layout="wide")
+
+
+def fallback_avatar(name: str, accent: str = "7C3AED") -> str:
+    initials = "".join(part[0].upper() for part in name.split()[:2] if part)
+    if not initials:
+        initials = "H"
+    return (
+        f"https://ui-avatars.com/api/?name={quote(initials)}"
+        f"&background={accent}&color=fff&size=200"
+    )
+
+
+def mysql_available() -> bool:
+    try:
+        config = {
+            "host": os.getenv("MYSQL_HOST", "127.0.0.1"),
+            "port": int(os.getenv("MYSQL_PORT", "3306")),
+            "database": os.getenv("MYSQL_DATABASE", "hometree"),
+            "user": os.getenv("MYSQL_USER", "root"),
+            "password": os.getenv("MYSQL_PASSWORD", ""),
+            "autocommit": True,
+        }
+        conn = mysql.connector.connect(**config)
+        conn.close()
+        return True
+    except Exception:
+        return False
+
+
 st.markdown(
     """
     <style>
-        #MainMenu, header, footer { visibility: hidden; }
-        .block-container { padding: 0 !important; max-width: 100% !important; }
-        iframe { width: 100%; height: 100vh !important; height: 100dvh !important; border: 0; display: block; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5efe8 0%, #f7f1f6 30%, #eef4f7 100%);
+            color: #1e1b1b;
+        }
+
+        .stApp {
+            background: linear-gradient(135deg, #f5efe8 0%, #f7f1f6 30%, #eef4f7 100%);
+        }
+
+        .block-container {
+            max-width: 1480px;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+
+        [data-testid="stSidebar"] {
+            background: rgba(255,255,255,0.62);
+            backdrop-filter: blur(18px);
+            border-right: 1px solid rgba(124, 58, 237, 0.08);
+        }
+
+        .stRadio > div {
+            gap: 0.5rem;
+        }
+
+        .stRadio label {
+            background: rgba(255,255,255,0.65);
+            border: 1px solid rgba(77, 71, 66, 0.08);
+            border-radius: 16px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+        }
+
+        .stRadio label > div:first-child {
+            display: none;
+        }
+
+        div[data-testid="stMetricValue"] {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        div[data-testid="stButton"] > button {
+            border-radius: 14px;
+            border: none;
+            background: linear-gradient(135deg, #1f2937 0%, #4b5563 100%);
+            color: white;
+            padding: 0.65rem 1rem;
+            font-weight: 600;
+            box-shadow: 0 8px 20px rgba(31, 41, 55, 0.18);
+        }
+
+        div[data-testid="stButton"] > button:hover {
+            filter: brightness(1.03);
+            transform: translateY(-1px);
+        }
+
+        .card-shell {
+            background: rgba(255,255,255,0.72);
+            border: 1px solid rgba(72,72,72,0.08);
+            border-radius: 26px;
+            padding: 1rem;
+            box-shadow: 0 16px 28px rgba(137, 136, 136, 0.08);
+            margin-bottom: 1rem;
+        }
+
+        .profile-hero {
+            background:
+                linear-gradient(180deg, rgba(26, 18, 17, 0.06), rgba(26, 18, 17, 0.18)),
+                url('https://images.unsplash.com/photo-1516280440502-863a346513c1?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;
+            border-radius: 30px;
+            padding: 1.2rem;
+            min-height: 210px;
+        }
+
+        .profile-hero .title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 0.2rem;
+        }
+
+        .soft-pill {
+            display: inline-block;
+            background: rgba(255,255,255,0.8);
+            border: 1px solid rgba(0,0,0,0.04);
+            border-radius: 999px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.76rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            color: #3d3d3d;
+        }
+
+        .friendly-image {
+            border-radius: 20px;
+            object-fit: cover;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+        }
+
+        .mini-avatar {
+            width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.7);
+        }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-html_code = r"""
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#f5f5f7">
-    <style>
-        :root {
-            color-scheme: light;
-            --bg: #f5f5f7;
-            --surface: rgba(255, 255, 255, .72);
-            --surface-solid: #fff;
-            --text: #1d1d1f;
-            --muted: #86868b;
-            --line: rgba(60, 60, 67, .12);
-            --accent: #e85d8e;
-            --accent-soft: rgba(232, 93, 142, .12);
-            --shadow: 0 18px 55px rgba(30, 30, 45, .09);
-            --blur: 22px;
-            --green: #16834b;
-            --red: #d54747;
-        }
-        [data-theme="dark"] {
-            color-scheme: dark;
-            --bg: #101013;
-            --surface: rgba(36, 36, 42, .76);
-            --surface-solid: #24242a;
-            --text: #f5f5f7;
-            --muted: #a1a1a6;
-            --line: rgba(255, 255, 255, .1);
-            --accent: #ff78a9;
-            --accent-soft: rgba(255, 120, 169, .14);
-            --shadow: 0 18px 55px rgba(0, 0, 0, .3);
-            --green: #53c98b;
-            --red: #ff6961;
-        }
-        * { box-sizing: border-box; }
-        html, body { width: 100%; height: 100%; margin: 0; }
-        body {
-            overflow: hidden;
-            color: var(--text);
-            background:
-                radial-gradient(ellipse at 15% -15%, rgba(255, 190, 211, .27), transparent 34%),
-                radial-gradient(ellipse at 95% 35%, rgba(187, 203, 255, .18), transparent 32%),
-                var(--bg);
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
-            -webkit-font-smoothing: antialiased;
-            transition: background .25s, color .25s;
-        }
-        button, input { font: inherit; }
-        button { color: inherit; }
-        .app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; min-height: 480px; }
-        .top-bar, .bottom-nav, .glass {
-            background: var(--surface);
-            -webkit-backdrop-filter: blur(var(--blur)) saturate(170%);
-            backdrop-filter: blur(var(--blur)) saturate(170%);
-        }
-        .top-bar {
-            height: 66px; flex: 0 0 66px; display: flex; align-items: center;
-            justify-content: space-between; padding: 0 max(28px, env(safe-area-inset-left));
-            border-bottom: 1px solid var(--line); z-index: 5;
-        }
-        .logo { font-size: 19px; font-weight: 750; letter-spacing: -.7px; }
-        .logo-mark { color: var(--accent); }
-        .theme-btn {
-            display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line);
-            background: var(--surface); border-radius: 999px; padding: 9px 14px; cursor: pointer;
-            font-size: 12px; transition: transform .2s, background .2s;
-        }
-        .theme-btn:hover { transform: translateY(-1px); background: var(--surface-solid); }
-        .content { flex: 1; min-height: 0; position: relative; }
-        .tab-page { display: none; height: 100%; overflow: auto; padding: 24px; scrollbar-width: thin; }
-        .tab-page.active { display: block; animation: appear .24s ease-out; }
-        @keyframes appear { from { opacity: .5; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-        .page-inner { max-width: 1100px; margin: 0 auto; }
-        .page-heading { margin: 0 0 18px; font-size: 23px; letter-spacing: -.6px; }
-        .page-subheading { color: var(--muted); font-size: 13px; margin: -10px 0 22px; }
 
-        .match-layout { display: flex; align-items: stretch; gap: 26px; height: 100%; max-width: 1050px; margin: auto; }
-        .deck-area { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .card-container { width: min(100%, 360px); height: min(66vh, 560px); height: min(66dvh, 560px); min-height: 390px; position: relative; }
-        .swipe-card {
-            position: absolute; inset: 0; overflow: hidden; display: flex; flex-direction: column;
-            border: 1px solid var(--line); border-radius: 27px; background: var(--surface-solid);
-            box-shadow: var(--shadow); transform-origin: 50% 90%;
-            transition: transform .38s cubic-bezier(.2,.8,.2,1), opacity .25s;
-            touch-action: pan-y; user-select: none;
-        }
-        .card-img { display: block; width: 100%; height: 48%; min-height: 170px; object-fit: cover; background: var(--bg); }
-        .card-info { min-height: 0; flex: 1; display: flex; flex-direction: column; padding: 17px 19px 18px; }
-        .name-row { display: flex; align-items: baseline; gap: 9px; margin-bottom: 9px; }
-        .name { font-size: 22px; font-weight: 720; letter-spacing: -.5px; }
-        .age { color: var(--muted); font-size: 13px; }
-        .tags, .media-links { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 11px; }
-        .tag { border-radius: 999px; padding: 5px 10px; background: var(--accent-soft); color: var(--accent); font-size: 11px; }
-        .media-btn { border: 1px solid var(--line); border-radius: 999px; padding: 5px 10px; font-size: 10px; cursor: pointer; }
-        .btn-douban { color: var(--green); }
-        .btn-netease { color: var(--red); }
-        .quote { flex: 1; min-height: 24px; color: var(--muted); font-size: 13px; line-height: 1.5; font-style: italic; }
-        .ai-agent { display: inline-flex; align-self: flex-start; padding: 8px 10px; border-radius: 11px; background: var(--bg); color: var(--muted); font-size: 11px; }
-        .controls { display: flex; align-items: center; justify-content: center; gap: 19px; padding-top: 17px; }
-        .btn {
-            width: 52px; height: 52px; display: grid; place-items: center; border-radius: 50%;
-            border: 1px solid var(--line); background: var(--surface); box-shadow: 0 5px 18px rgba(0,0,0,.07);
-            cursor: pointer; font-size: 19px; transition: transform .18s, box-shadow .18s, background .18s;
-        }
-        .btn:hover { transform: translateY(-3px); box-shadow: 0 9px 22px rgba(0,0,0,.12); }
-        .btn:active { transform: scale(.94); }
-        .btn-like { width: 60px; height: 60px; color: var(--accent); font-size: 24px; border-color: var(--accent); background: var(--accent-soft); }
-        .matches-sidebar { width: 290px; flex: 0 0 290px; align-self: center; max-height: 78%; overflow: auto; padding: 18px; border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow); }
-        .matches-title { padding-bottom: 13px; border-bottom: 1px solid var(--line); font-size: 14px; font-weight: 700; }
-        .match-item { display: flex; align-items: center; gap: 11px; padding: 11px 8px; margin: 3px -8px; border-radius: 13px; cursor: pointer; transition: background .18s; }
-        .match-item:hover { background: var(--accent-soft); }
-        .match-avatar { width: 43px; height: 43px; flex: 0 0 43px; object-fit: cover; border-radius: 50%; }
-        .match-info { flex: 1; min-width: 0; }
-        .match-name { font-size: 13px; font-weight: 650; }
-        .match-last { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--muted); font-size: 11px; margin-top: 4px; }
-        .empty-matches { padding: 24px 8px 10px; color: var(--muted); font-size: 12px; text-align: center; }
+def seed_data() -> Dict[str, Any]:
+    return {
+        "profile": {
+            "name": "Yiming",
+            "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80",
+            "bio": "喜欢书和音乐，偏爱安静、有温度的生活方式。把每一次阅读和聆听都当成跟城市对话。",
+            "location": "杭州",
+            "social": {
+                "douban": "豆瓣：已绑定《书影音日记》· 126 条收藏",
+                "netease": "网易云：最近在听《城市夜归》、民谣与电子",
+            },
+            "highlights": [
+                "喜欢安静的独立出版",
+                "收藏偏电影与文学的城市叙事",
+                "正在读《在路上》《岛上书店》",
+            ],
+        },
+        "users": [
+            {
+                "id": "louye",
+                "name": "楼野",
+                "age": 28,
+                "img": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=900&q=80",
+                "tags": ["文学", "独立书店", "慢生活"],
+                "quote": "喜欢在雨天走遍每一家书店，听书页翻动的声音。",
+                "ai": "偏爱日系文学、城市故事和安静的氛围音乐。",
+                "douban": "豆瓣：已收藏 132 本书与 96 部电影",
+                "netease": "网易云：最爱城市、民谣和爵士。",
+            },
+            {
+                "id": "bjork",
+                "name": "Bjork",
+                "age": 34,
+                "img": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=900&q=80",
+                "tags": ["Art Pop", "电子", "视觉艺术"],
+                "quote": "I am the spark, and the sound is my map.",
+                "ai": "在艺术和音乐之间来回穿梭，喜欢具有实验性的表达。",
+                "douban": "豆瓣：重度电影与纪录片收藏者",
+                "netease": "网易云：电子、实验和氛围音乐收藏夹",
+            },
+            {
+                "id": "tyler",
+                "name": "Tyler Durden",
+                "age": 30,
+                "img": "https://images.unsplash.com/photo-1520637836862-4d197d17c90a?auto=format&fit=crop&w=900&q=80",
+                "tags": ["Fight Club", "荒诞", "反主流"],
+                "quote": "You are not your job.",
+                "ai": "擅长破坏常规、重构日常，阅读偏哲学与反乌托邦。",
+                "douban": "豆瓣：地域文化与电影史有较深关注",
+                "netease": "网易云：重度摇滚与冷门独立歌单",
+            },
+            {
+                "id": "lotayu",
+                "name": "洛塔雨",
+                "age": 27,
+                "img": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=900&q=80",
+                "tags": ["治愈", "旅行", "日记"],
+                "quote": "旅行是为了重新认识自己的生活方式。",
+                "ai": "喜欢轻旅行、摄影和缓慢型音乐，日记本比社交软件更真实。",
+                "douban": "豆瓣：旅行笔记、图书、电影记录很全",
+                "netease": "网易云：温暖治愈与城市散步歌单",
+            },
+        ],
+        "books": [
+            {
+                "id": 1,
+                "title": "活着",
+                "author": "余华",
+                "price": 18.9,
+                "city": "杭州",
+                "cover": "https://img1.doubanio.com/view/subject/s/public/s27214154.jpg",
+                "tags": ["现实主义", "中国文学"],
+                "similar": ["许三观卖血记", "兄弟", "白鹿原"],
+                "summary": "福贵的一生像一场跨越时代的苦难记录，荒诞中透着热烈的生命力。",
+            },
+            {
+                "id": 2,
+                "title": "岛上书店",
+                "author": "加·泽文",
+                "price": 39.0,
+                "city": "上海",
+                "cover": "https://img9.doubanio.com/view/subject/s/public/s29810488.jpg",
+                "tags": ["治愈", "小说"],
+                "similar": ["晚熟的人", "一句顶一万句", "当呼吸化作风"],
+                "summary": "在一个与世隔绝的小岛上，一间书店像一座灯塔，让人重新学会爱与失去。",
+            },
+            {
+                "id": 3,
+                "title": "人生海海",
+                "author": "麦家",
+                "price": 52.0,
+                "city": "北京",
+                "cover": "https://img1.doubanio.com/view/subject/s/public/s33939677.jpg",
+                "tags": ["悬疑", "成长"],
+                "similar": ["白夜行", "尘埃落定", "许三观卖血记"],
+                "summary": "以一个极端的命运故事，放大人性里的善、恶与复杂的自我选择。",
+            },
+            {
+                "id": 4,
+                "title": "小王子",
+                "author": "安托万·德·圣-埃克苏佩里",
+                "price": 22.5,
+                "city": "苏州",
+                "cover": "https://img1.doubanio.com/view/subject/s/public/s1001902.jpg",
+                "tags": ["童话", "哲思"],
+                "similar": ["夜间飞行", "牧羊少年的奇幻之旅", "我在未来等你"],
+                "summary": "一场关于爱、责任与成人世界的轻盈而深沉对话。",
+            },
+            {
+                "id": 5,
+                "title": "房思琪的初恋乐园",
+                "author": "林奕含",
+                "price": 36.0,
+                "city": "深圳",
+                "cover": "https://img9.doubanio.com/view/subject/s/public/s28065015.jpg",
+                "tags": ["文学", "成长"],
+                "similar": ["围城", "我们仨", "失踪的孩子"],
+                "summary": "一段关于青春创伤与自我救赎的书写，在极致的情绪里发光。",
+            },
+        ],
+        "articles": [
+            {
+                "id": 101,
+                "title": "如何在城市里把一本书读完？",
+                "category": "阅读札记",
+                "cover": "https://images.unsplash.com/photo-1516280440502-863a346513c1?auto=format&fit=crop&w=1200&q=80",
+                "summary": "从地铁通勤到夜晚独处，一套低压力的阅读习惯设计。",
+                "content": "如果你想真正读完一本书，不需要强迫自己每天写阅读计划，而是从固定的场景入手：搭乘地铁时读短篇，晚上在床头读长篇，周末把阅读变成有仪式感的短时段放空。我的经验是，把阅读当作一种生活习惯而不是任务，才能长久。",
+            },
+            {
+                "id": 102,
+                "title": "7个适合慢节奏生活的城市歌单",
+                "category": "音乐笔记",
+                "cover": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80",
+                "summary": "从晨跑歌单到夜晚散步，找到适合自己的音乐频率。",
+                "content": "我一直认为一张歌单最重要的，不是“有多少首歌”，而是“你愿意在哪种情境里听它”。早上适合温暖的民谣，晚上适合低频电子，雨天适合钢琴和城市灵魂歌。",
+            },
+            {
+                "id": 103,
+                "title": "我的旧书店清单：从书页到灯光",
+                "category": "城市观察",
+                "cover": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1200&q=80",
+                "summary": "旧书店最打动人的地方，是书架后的暗色温度和人的慢节奏。",
+                "content": "每次走进旧书店，都会自然放慢脚步。人们在棚架之间翻书，像在悄悄更新自己的人生地图。不同于快节奏电商，旧书店的魅力在于偶遇与不急切。",
+            },
+        ],
+        "blogs": [
+            {
+                "id": 201,
+                "title": "一个城市的书店地图",
+                "cover": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1200&q=80",
+                "summary": "整理最近两个月走过的书店与咖啡馆，记录那些让我停下来阅读的地方。",
+                "content": "我去过的每一家书店，都像一座小型的私人图书馆。这里的书架不只是摆放物品，而是撑起一个人的精神休息区。",
+            },
+            {
+                "id": 202,
+                "title": "和音乐一起出发：城市散步清单",
+                "cover": "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
+                "summary": "把一段不长不短的散步，放进一个轻微失重的回响里。",
+                "content": "散步不一定要有目的，也不一定要到达某处；它是一种把情绪沉下来、把空白留出来的方式。音乐在其中起到桥梁作用。",
+            },
+        ],
+        "forum_threads": [
+            {
+                "id": 301,
+                "title": "你最近都在读什么？来推荐一本让人愿意反复翻的书",
+                "tag": "阅读",
+                "meta": "18 小时前 · 12 回复",
+                "desc": "无论是城市故事、文学长篇，还是短篇文集，都想听听你最近的阅读体验。",
+            },
+            {
+                "id": 302,
+                "title": "听歌像在做一场城市漫游，推荐你最近的片单",
+                "tag": "音乐",
+                "meta": "26 小时前 · 21 回复",
+                "desc": "想知道大家会用什么歌单陪散步、陪雨夜、陪写作，我想做一个慢节奏清单。",
+            },
+            {
+                "id": 303,
+                "title": "旧书店线下小组：你去过哪些值得反复回访的地方？",
+                "tag": "社区",
+                "meta": "11 小时前 · 9 回复",
+                "desc": "分享你最喜欢的旧书店、街角咖啡和安静到能听见翻页声的地方。",
+            },
+        ],
+        "forum_replies": {
+            301: [
+                {"user": "夏夜", "text": "最近在读《活着》，感觉它的力量在于把悲伤写得极其克制，却又特别动人。"},
+                {"user": "远山", "text": "我推荐《房思琪的初恋乐园》，它很痛，但也让人更认真地看待文学与创伤。"},
+            ],
+            302: [
+                {"user": "Mina", "text": "我会用《城市夜归》作为夜跑的歌单，氛围很适合静下来。"},
+                {"user": "赫兹", "text": "雨天听民谣和电子混合，像一部城市电影的BGM。"},
+            ],
+            303: [
+                {"user": "阿春", "text": "最喜欢的还是南边那家老书店，灯光很暖，书页香味特别真实。"},
+                {"user": "柯西", "text": "我最近一直在找有悠长书架和咖啡的地方，最重要是别太吵。"},
+            ],
+        },
+    }
 
-        .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 15px; }
-        .book-item { display: flex; gap: 15px; padding: 14px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); -webkit-backdrop-filter: blur(var(--blur)); backdrop-filter: blur(var(--blur)); transition: transform .2s, box-shadow .2s; }
-        .book-item:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
-        .book-cover { width: 75px; height: 108px; object-fit: cover; border-radius: 8px; background: var(--bg); }
-        .book-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-        .book-title { font-size: 14px; font-weight: 700; margin: 3px 0 6px; }
-        .book-meta { color: var(--muted); font-size: 11px; }
-        .book-price { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; color: var(--accent); font-size: 14px; font-weight: 700; }
-        .buy-btn { border: 0; border-radius: 999px; padding: 8px 11px; color: #fff; background: var(--accent); font-size: 11px; cursor: pointer; }
-        .buy-btn:active { transform: scale(.96); }
 
-        .xhs-masonry { columns: 3 220px; column-gap: 16px; }
-        .xhs-card { overflow: hidden; break-inside: avoid; margin: 0 0 16px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: 0 8px 24px rgba(20,20,30,.04); }
-        .xhs-img { display: block; width: 100%; object-fit: cover; }
-        .xhs-content { padding: 12px 13px 9px; font-size: 13px; font-weight: 650; line-height: 1.5; }
-        .xhs-author { display: flex; align-items: center; gap: 8px; padding: 0 13px 13px; color: var(--muted); font-size: 11px; }
-        .xhs-avatar { width: 23px; height: 23px; border-radius: 50%; object-fit: cover; }
+def get_data() -> Dict[str, Any]:
+    data = seed_data()
+    if not mysql_available():
+        st.caption("MySQL 未配置，当前使用本地演示数据。")
+        return data
 
-        .profile-header { display: flex; align-items: center; gap: 17px; padding: 20px; margin-bottom: 18px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); }
-        .avatar { width: 68px; height: 68px; object-fit: cover; border-radius: 20px; }
-        .profile-header h2 { margin: 0; font-size: 19px; }
-        .profile-header p { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
-        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .setting-card { display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 58px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 15px; background: var(--surface); font-size: 13px; }
-        .setting-action { color: var(--accent); cursor: pointer; white-space: nowrap; }
-        .toggle { width: 42px; height: 25px; flex: 0 0 42px; position: relative; border-radius: 999px; background: var(--line); cursor: pointer; transition: background .2s; }
-        .toggle::after { content: ""; position: absolute; top: 3px; left: 3px; width: 19px; height: 19px; border-radius: 50%; background: white; box-shadow: 0 1px 4px #0002; transition: transform .2s; }
-        .toggle.active { background: #34c759; }
-        .toggle.active::after { transform: translateX(17px); }
+    try:
+        conn = mysql.connector.connect(
+            host=os.getenv("MYSQL_HOST", "127.0.0.1"),
+            port=int(os.getenv("MYSQL_PORT", "3306")),
+            database=os.getenv("MYSQL_DATABASE", "hometree"),
+            user=os.getenv("MYSQL_USER", "root"),
+            password=os.getenv("MYSQL_PASSWORD", ""),
+            autocommit=True,
+        )
+        with conn.cursor(dictionary=True) as cur:
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS app_books (
+                    id INT PRIMARY KEY,
+                    title VARCHAR(255),
+                    author VARCHAR(255),
+                    price DECIMAL(10,2),
+                    city VARCHAR(100),
+                    cover VARCHAR(512),
+                    tags JSON,
+                    similar JSON,
+                    summary TEXT
+                )
+                """
+            )
+            cur.execute("SELECT COUNT(*) AS total FROM app_books")
+            if cur.fetchone()["total"] == 0:
+                for book in data["books"]:
+                    cur.execute(
+                        "INSERT INTO app_books (id, title, author, price, city, cover, tags, similar, summary) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                        (
+                            book["id"],
+                            book["title"],
+                            book["author"],
+                            float(book["price"]),
+                            book["city"],
+                            book["cover"],
+                            book["tags"],
+                            book["similar"],
+                            book["summary"],
+                        ),
+                    )
+            cur.execute("SELECT * FROM app_books ORDER BY id")
+            rows = cur.fetchall()
+            if rows:
+                data["books"] = rows
+                for book in data["books"]:
+                    book["tags"] = book["tags"] or []
+                    book["similar"] = book["similar"] or []
+        conn.close()
+        st.caption("MySQL 连接成功，已加载数据库数据。")
+    except Exception:
+        st.caption("MySQL 未配置或连接失败，当前使用本地演示数据。")
+    return data
 
-        .bottom-nav { height: 72px; flex: 0 0 72px; display: flex; justify-content: center; gap: min(8vw, 90px); align-items: center; border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); z-index: 5; }
-        .nav-item { min-width: 58px; display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--muted); cursor: pointer; font-size: 10px; transition: color .2s, transform .2s; }
-        .nav-item:hover { transform: translateY(-2px); }
-        .nav-item.active { color: var(--accent); }
-        .nav-icon { font-size: 19px; line-height: 1; }
 
-        .chat-modal { position: fixed; inset: 0; z-index: 20; display: none; flex-direction: column; background: var(--bg); }
-        .chat-header { display: flex; align-items: center; gap: 12px; min-height: 66px; padding: 10px 18px; border-bottom: 1px solid var(--line); background: var(--surface); -webkit-backdrop-filter: blur(var(--blur)); backdrop-filter: blur(var(--blur)); }
-        .back-btn { width: 38px; height: 38px; border: 0; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-size: 20px; cursor: pointer; }
-        .chat-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }
-        .chat-name { font-size: 15px; font-weight: 700; }
-        .chat-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 22px max(18px, calc((100% - 720px)/2)); }
-        .msg { max-width: min(78%, 520px); padding: 11px 15px; border-radius: 19px; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
-        .msg-left { align-self: flex-start; border: 1px solid var(--line); border-bottom-left-radius: 6px; background: var(--surface-solid); }
-        .msg-right { align-self: flex-end; border-bottom-right-radius: 6px; background: var(--accent); color: #fff; }
-        .chat-input-area { display: flex; gap: 9px; padding: 12px max(16px, calc((100% - 720px)/2)); padding-bottom: max(12px, env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--surface); }
-        .chat-input { min-width: 0; flex: 1; padding: 12px 15px; border: 1px solid var(--line); border-radius: 999px; outline: 0; color: var(--text); background: var(--bg); }
-        .chat-input:focus { border-color: var(--accent); }
-        .send-btn { border: 0; border-radius: 999px; padding: 0 19px; background: var(--accent); color: #fff; font-weight: 650; cursor: pointer; }
-        button:focus-visible, .nav-item:focus-visible, .match-item:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent), transparent 45%); outline-offset: 3px; }
-        @media (max-width: 700px) {
-            .app { min-height: 430px; }
-            .top-bar { height: 56px; flex-basis: 56px; padding: 0 16px; }
-            .logo { font-size: 17px; }
-            .theme-btn { padding: 8px 11px; font-size: 11px; }
-            .tab-page { padding: 16px; }
-            .match-layout { flex-direction: column; gap: 12px; justify-content: center; }
-            .deck-area { flex: 1 1 auto; min-height: 0; justify-content: center; }
-            .card-container { width: min(100%, 370px); height: min(56dvh, 500px); min-height: 310px; }
-            .card-img { height: 44%; min-height: 120px; }
-            .card-info { padding: 13px 15px; }
-            .name { font-size: 19px; }
-            .controls { padding-top: 10px; gap: 15px; }
-            .btn { width: 46px; height: 46px; }
-            .btn-like { width: 54px; height: 54px; }
-            .matches-sidebar { width: 100%; flex: 0 0 auto; align-self: stretch; max-height: 108px; padding: 9px 12px; border-radius: 16px; }
-            .matches-title { padding: 0 2px 6px; border: 0; font-size: 12px; }
-            #matchesList { display: flex; gap: 4px; overflow: auto; }
-            .match-item { flex: 0 0 auto; padding: 5px; margin: 0; }
-            .match-avatar { width: 37px; height: 37px; flex-basis: 37px; }
-            .match-info { max-width: 86px; }
-            .match-name { font-size: 11px; }
-            .match-last { font-size: 10px; }
-            .empty-matches { padding: 8px 4px; white-space: nowrap; }
-            .bottom-nav { height: 64px; flex-basis: 64px; justify-content: space-around; gap: 0; }
-            .nav-item { min-width: 50px; }
-            .settings-grid { grid-template-columns: 1fr; }
-            .page-heading { font-size: 20px; }
-            .xhs-masonry { columns: 2 145px; column-gap: 10px; }
-            .xhs-card { margin-bottom: 10px; border-radius: 14px; }
-            .xhs-content { font-size: 12px; padding: 10px 10px 7px; }
-            .xhs-author { padding: 0 10px 10px; }
-            .book-item { padding: 11px; }
-        }
-        @media (max-height: 700px) and (min-width: 701px) {
-            .card-container { height: min(58vh, 470px); min-height: 350px; }
-            .matches-sidebar { max-height: 88%; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
-        }
-    </style>
-</head>
-<body data-theme="light">
-    <div class="app">
-        <header class="top-bar">
-            <div class="logo">HOMETREE<span class="logo-mark">.</span></div>
-            <button class="theme-btn" id="themeButton" onclick="toggleTheme()" aria-label="切换外观"><span id="themeIcon">☾</span><span id="themeLabel">深色外观</span></button>
-        </header>
-        <main class="content">
-            <section class="tab-page active" id="page-match">
-                <div class="match-layout">
-                    <div class="deck-area">
-                        <div class="card-container" id="cardContainer"></div>
-                        <div class="controls">
-                            <button class="btn" aria-label="跳过" onclick="swipe('left')">×</button>
-                            <button class="btn btn-like" aria-label="喜欢" onclick="swipe('right')">♥</button>
-                        </div>
-                    </div>
-                    <aside class="matches-sidebar glass">
-                        <div class="matches-title">消息匹配 <span id="matchesCount"></span></div>
-                        <div id="matchesList"></div>
-                    </aside>
-                </div>
-            </section>
-            <section class="tab-page" id="page-market">
-                <div class="page-inner">
-                    <h1 class="page-heading">书市</h1><p class="page-subheading">让喜欢的书，继续流动。</p>
-                    <div class="market-grid">
-                        <article class="book-item"><img src="https://img9.doubanio.com/view/subject/s/public/s28385152.jpg" class="book-cover" alt="撒哈拉的故事封面"><div class="book-info"><div class="book-title">撒哈拉的故事</div><div class="book-meta">三毛 · 9成新 · 北京</div><div class="book-price">¥ 12.00 <button class="buy-btn" onclick="addToBag('撒哈拉的故事')">加入书袋</button></div></div></article>
-                        <article class="book-item"><img src="https://img9.doubanio.com/view/subject/s/public/s27310421.jpg" class="book-cover" alt="我的天才女友封面"><div class="book-info"><div class="book-title">我的天才女友</div><div class="book-meta">费兰特 · 8成新 · 上海</div><div class="book-price">¥ 18.50 <button class="buy-btn" onclick="addToBag('我的天才女友')">加入书袋</button></div></div></article>
-                        <article class="book-item"><img src="https://img3.doubanio.com/view/subject/s/public/s33747736.jpg" class="book-cover" alt="正常人封面"><div class="book-info"><div class="book-title">正常人</div><div class="book-meta">萨莉·鲁尼 · 全新 · 广州</div><div class="book-price">¥ 25.00 <button class="buy-btn" onclick="addToBag('正常人')">加入书袋</button></div></div></article>
-                        <article class="book-item"><img src="https://img1.doubanio.com/view/subject/s/public/s27237850.jpg" class="book-cover" alt="百年孤独封面"><div class="book-info"><div class="book-title">百年孤独</div><div class="book-meta">马尔克斯 · 7成新 · 杭州</div><div class="book-price">¥ 9.90 <button class="buy-btn" onclick="addToBag('百年孤独')">加入书袋</button></div></div></article>
-                    </div>
-                </div>
-            </section>
-            <section class="tab-page" id="page-community">
-                <div class="page-inner">
-                    <h1 class="page-heading">精神自留地</h1><p class="page-subheading">分享最近打动你的事。</p>
-                    <div class="xhs-masonry">
-                        <article class="xhs-card"><img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600" class="xhs-img" style="height:250px" alt="音乐现场"><div class="xhs-content">罗大佑的歌词，句句都是时代挽歌。</div><div class="xhs-author"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=60" class="xhs-avatar" alt="">Yiming</div></article>
-                        <article class="xhs-card"><img src="https://images.unsplash.com/photo-1520637836862-4d197d17c90a?w=600" class="xhs-img" style="height:180px" alt="电影与影像"><div class="xhs-content">重看《搏击俱乐部》，还是被 Tyler 震撼。</div><div class="xhs-author"><img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=60" class="xhs-avatar" alt="">娄烨</div></article>
-                        <article class="xhs-card"><img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600" class="xhs-img" style="height:220px" alt="抽象艺术"><div class="xhs-content">Björk 的现场是一场极光祭祀。</div><div class="xhs-author"><img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=60" class="xhs-avatar" alt="">Björk</div></article>
-                    </div>
-                </div>
-            </section>
-            <section class="tab-page" id="page-profile">
-                <div class="page-inner">
-                    <h1 class="page-heading">我的</h1>
-                    <div class="profile-header"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200" class="avatar" alt="头像"><div><h2>Yiming</h2><p>豆瓣 126本在读 · 网易云 89首私藏</p></div></div>
-                    <div class="settings-grid">
-                        <div class="setting-card"><span>隐身模式（不被推荐）</span><div class="toggle active" role="switch" aria-checked="true" tabindex="0" onclick="toggleSwitch(this)" onkeydown="toggleOnKey(event,this)"></div></div>
-                        <div class="setting-card"><span>屏蔽 / 拉黑管理</span><span class="setting-action" onclick="alert('已屏蔽 2 人')">查看（2）</span></div>
-                        <div class="setting-card"><span>同步豆瓣书影音</span><span class="setting-action">已绑定</span></div>
-                        <div class="setting-card"><span>同步网易云歌单</span><span style="color:var(--muted)">未绑定</span></div>
-                    </div>
-                </div>
-            </section>
-        </main>
-        <nav class="bottom-nav" aria-label="主导航">
-            <div class="nav-item active" role="button" tabindex="0" onclick="switchTab('page-match',this)" onkeydown="navOnKey(event,this)"><span class="nav-icon">⌕</span><span>匹配</span></div>
-            <div class="nav-item" role="button" tabindex="0" onclick="switchTab('page-market',this)" onkeydown="navOnKey(event,this)"><span class="nav-icon">▤</span><span>书市</span></div>
-            <div class="nav-item" role="button" tabindex="0" onclick="switchTab('page-community',this)" onkeydown="navOnKey(event,this)"><span class="nav-icon">✳</span><span>社区</span></div>
-            <div class="nav-item" role="button" tabindex="0" onclick="switchTab('page-profile',this)" onkeydown="navOnKey(event,this)"><span class="nav-icon">◉</span><span>我的</span></div>
-        </nav>
-    </div>
-    <section class="chat-modal" id="chatModal" aria-label="聊天">
-        <header class="chat-header"><button class="back-btn" onclick="closeChat()" aria-label="返回">‹</button><img id="chatAvatar" class="chat-avatar" src="" alt=""><div class="chat-name" id="chatName"></div></header>
-        <div class="chat-body" id="chatBody" aria-live="polite"></div>
-        <div class="chat-input-area"><input class="chat-input" id="chatInput" placeholder="发消息..." aria-label="消息内容"><button class="send-btn" onclick="sendMessage()">发送</button></div>
-    </section>
-    <script>
-        const users = [
-            { id:"louye", name:"娄烨", age:58, img:"https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600", tags:["苏州河","推拿"], quote:"如果有一天我走了...", ai:"适合在雨天聊贾宏声。" },
-            { id:"tyler", name:"Tyler Durden", age:30, img:"https://images.unsplash.com/photo-1520637836862-4d197d17c90a?w=600", tags:["Fight Club","Nihilism"], quote:"You are not your job.", ai:"别聊工作，聊地下搏击。" },
-            { id:"morrissey", name:"Morrissey", age:64, img:"https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600", tags:["The Smiths","Indie"], quote:"There is a light...", ai:"深夜 emo 必备。" },
-            { id:"bjork", name:"Björk", age:58, img:"https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600", tags:["Art Pop","实验电子"], quote:"I'm the spark.", ai:"冰岛极光与实验电子。" },
-            { id:"lotayu", name:"罗大佑", age:68, img:"https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600", tags:["鹿港小镇","时代"], quote:"台北不是我的家。", ai:"午夜聊华语启蒙。" },
-            { id:"emo", name:"Midwest Emo", age:22, img:"https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=600", tags:["Math Rock","Drop D"], quote:"Let's play in drop D.", ai:"效果器男孩。" },
-            { id:"muse", name:"Matt Bellamy", age:45, img:"https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600", tags:["Muse","Space Rock"], quote:"This is the last time.", ai:"科幻与反乌托邦。" },
-            { id:"aphex", name:"Aphex Twin", age:52, img:"https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600", tags:["IDM","Ambient"], quote:"Weird music.", ai:"Max/MSP 同好。" },
-            { id:"kurt", name:"Kurt Cobain", age:27, img:"https://images.unsplash.com/photo-1520637836862-4d197d17c90a?w=600", tags:["Grunge","Nirvana"], quote:"I'd rather be hated.", ai:"聊聊地下厂牌。" },
-            { id:"kevin", name:"Kevin Shields", age:60, img:"https://images.unsplash.com/photo-1516280440502-863a346513c1?w=600", tags:["Shoegaze","MBV"], quote:"Loveless is a wall.", ai:"噪音墙之神。" }
-        ];
-        let currentIndex = 0;
-        let matchedUsers = JSON.parse(localStorage.getItem("hometree_matches") || "[]");
-        let chatHistories = JSON.parse(localStorage.getItem("hometree_chats") || "{}");
-        let activeChatId = null;
-        let swipeLocked = false;
-        const container = document.getElementById("cardContainer");
+def render_chat_panel(user: Dict[str, Any]) -> None:
+    with st.sidebar:
+        st.markdown("<div class='card-shell'>", unsafe_allow_html=True)
+        st.subheader(f"聊天 · {user['name']}")
+        st.image(user.get("img") or fallback_avatar(user["name"]), width=70)
+        st.caption(user["douban"])
+        st.caption(user["netease"])
 
-        function renderAll() {
-            container.innerHTML = "";
-            if (currentIndex >= users.length) {
-                container.innerHTML = '<div class="empty-matches">暂时没有更多推荐，稍后再来看看。</div>';
-            } else {
-                for (let i = users.length - 1; i >= currentIndex; i--) {
-                    const user = users[i];
-                    const offset = i - currentIndex;
-                    const card = document.createElement("article");
-                    card.className = "swipe-card";
-                    card.dataset.top = String(offset === 0);
-                    card.style.transform = `scale(${1 - offset * .035}) translateY(${offset * 12}px)`;
-                    card.style.zIndex = String(users.length - offset);
-                    card.style.opacity = String(Math.max(.35, 1 - offset * .13));
-                    card.innerHTML = `
-                        <img src="${user.img}" class="card-img" alt="${user.name}">
-                        <div class="card-info">
-                            <div class="name-row"><div class="name"></div><div class="age">${user.age}</div></div>
-                            <div class="tags">${user.tags.map(t => `<span class="tag"></span>`).join("")}</div>
-                            <div class="media-links">
-                                <button class="media-btn btn-douban" onclick="alert('跳转豆瓣查看：${user.tags[0]}')">豆瓣</button>
-                                <button class="media-btn btn-netease" onclick="alert('跳转网易云查看：${user.tags[0]}')">网易云</button>
-                            </div>
-                            <div class="quote"></div><div class="ai-agent">✦ <span></span></div>
-                        </div>`;
-                    card.querySelector(".name").textContent = user.name;
-                    card.querySelector(".quote").textContent = `“${user.quote}”`;
-                    card.querySelector(".ai-agent span").textContent = `AI · ${user.ai}`;
-                    card.querySelectorAll(".tag").forEach((tag, index) => tag.textContent = user.tags[index]);
-                    container.appendChild(card);
-                }
-            }
-            document.getElementById("matchesCount").textContent = `(${matchedUsers.length})`;
-            const list = document.getElementById("matchesList");
-            list.innerHTML = "";
-            if (!matchedUsers.length) {
-                list.innerHTML = '<div class="empty-matches">喜欢一位推荐对象，即可开始聊天。</div>';
-            }
-            matchedUsers.forEach(user => {
-                const msgs = chatHistories[user.id] || [];
-                const item = document.createElement("div");
-                item.className = "match-item";
-                item.tabIndex = 0;
-                item.setAttribute("role", "button");
-                const img = document.createElement("img");
-                img.className = "match-avatar"; img.src = user.img; img.alt = "";
-                const info = document.createElement("div"); info.className = "match-info";
-                const name = document.createElement("div"); name.className = "match-name"; name.textContent = user.name;
-                const last = document.createElement("div"); last.className = "match-last";
-                last.textContent = msgs.length ? msgs[msgs.length - 1].text : "匹配成功，打个招呼吧！";
-                info.append(name, last); item.append(img, info);
-                item.onclick = () => openChat(user);
-                item.onkeydown = event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openChat(user); } };
-                list.appendChild(item);
-            });
-            attachSwipe();
-        }
+        if "chat_history" not in st.session_state:
+            st.session_state.chat_history = {}
 
-        function swipe(direction) {
-            if (currentIndex >= users.length || swipeLocked) return;
-            const topCard = container.querySelector(".swipe-card[data-top='true']");
-            if (!topCard) return;
-            swipeLocked = true;
-            const user = users[currentIndex];
-            topCard.style.transform = direction === "right" ? "translate3d(125%,0,0) rotate(15deg)" : "translate3d(-125%,0,0) rotate(-15deg)";
-            topCard.style.opacity = "0";
-            if (direction === "right" && !matchedUsers.some(item => item.id === user.id)) {
-                matchedUsers.push(user);
-                if (!chatHistories[user.id]) chatHistories[user.id] = [];
-                saveState();
-            }
-            currentIndex++;
-            window.setTimeout(() => {
-                renderAll();
-                swipeLocked = false;
-                if (direction === "right") openChat(user);
-            }, 300);
-        }
+        for msg in st.session_state.chat_history.get(user["id"], []):
+            if msg["role"] == "assistant":
+                with st.chat_message("assistant"):
+                    st.write(msg["text"])
+            else:
+                with st.chat_message("user"):
+                    st.write(msg["text"])
 
-        function attachSwipe() {
-            const card = container.querySelector(".swipe-card[data-top='true']");
-            if (!card) return;
-            let startX = 0, startY = 0, deltaX = 0, dragging = false;
-            card.addEventListener("pointerdown", event => {
-                if (event.target.closest("button")) return;
-                startX = event.clientX; startY = event.clientY; deltaX = 0; dragging = true;
-                card.setPointerCapture(event.pointerId);
-                card.style.transition = "none";
-            });
-            card.addEventListener("pointermove", event => {
-                if (!dragging) return;
-                deltaX = event.clientX - startX;
-                if (Math.abs(deltaX) > Math.abs(event.clientY - startY)) {
-                    card.style.transform = `translate3d(${deltaX}px,${Math.min(18, Math.abs(deltaX) * .025)}px,0) rotate(${deltaX * .035}deg)`;
-                }
-            });
-            const finish = () => {
-                if (!dragging) return;
-                dragging = false;
-                card.style.transition = "";
-                if (Math.abs(deltaX) > Math.min(90, window.innerWidth * .22)) swipe(deltaX > 0 ? "right" : "left");
-                else { card.style.transform = ""; }
-            };
-            card.addEventListener("pointerup", finish);
-            card.addEventListener("pointercancel", finish);
-        }
+        prompt = st.chat_input("给对方发一句话…")
+        if prompt:
+            history = st.session_state.chat_history.setdefault(user["id"], [])
+            history.append({"role": "user", "text": prompt})
+            history.append({"role": "assistant", "text": "我也挺喜欢这类书和音乐，我可以把你最近在看的清单发给你。"})
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
 
-        function openChat(user) {
-            activeChatId = user.id;
-            document.getElementById("chatName").textContent = user.name;
-            document.getElementById("chatAvatar").src = user.img;
-            document.getElementById("chatModal").style.display = "flex";
-            document.getElementById("chatInput").focus({ preventScroll: true });
-            renderChatMessages();
-        }
-        function closeChat() {
-            document.getElementById("chatModal").style.display = "none";
-            activeChatId = null;
-            renderAll();
-        }
-        function renderChatMessages() {
-            const body = document.getElementById("chatBody");
-            body.innerHTML = "";
-            const messages = chatHistories[activeChatId] || [];
-            if (!messages.length) {
-                addMessageToDB(activeChatId, "Hey，很高兴匹配到你。", "left");
-                return;
-            }
-            messages.forEach(message => {
-                const div = document.createElement("div");
-                div.className = `msg msg-${message.type}`;
-                div.textContent = message.text;
-                body.appendChild(div);
-            });
-            body.scrollTop = body.scrollHeight;
-        }
-        function addMessageToDB(id, text, type) {
-            if (!chatHistories[id]) chatHistories[id] = [];
-            chatHistories[id].push({ text, type });
-            saveState();
-            if (activeChatId === id) renderChatMessages();
-        }
-        function sendMessage() {
-            const input = document.getElementById("chatInput");
-            const text = input.value.trim();
-            if (!text || !activeChatId) return;
-            const chatId = activeChatId;
-            addMessageToDB(chatId, text, "right");
-            input.value = "";
-            window.setTimeout(() => {
-                if (chatHistories[chatId]) addMessageToDB(chatId, "我也这么觉得，这就是我们在这里相遇的原因。", "left");
-            }, 1000);
-        }
-        function saveState() {
-            localStorage.setItem("hometree_matches", JSON.stringify(matchedUsers));
-            localStorage.setItem("hometree_chats", JSON.stringify(chatHistories));
-            renderAll();
-        }
-        function switchTab(pageId, button) {
-            document.querySelectorAll(".tab-page").forEach(page => page.classList.toggle("active", page.id === pageId));
-            document.querySelectorAll(".nav-item").forEach(item => item.classList.toggle("active", item === button));
-        }
-        function navOnKey(event, element) {
-            if (event.key === "Enter" || event.key === " ") { event.preventDefault(); element.click(); }
-        }
-        function toggleTheme() {
-            const body = document.body;
-            const next = body.dataset.theme === "light" ? "dark" : "light";
-            body.dataset.theme = next;
-            localStorage.setItem("hometree_theme", next);
-            updateThemeButton();
-        }
-        function updateThemeButton() {
-            const dark = document.body.dataset.theme === "dark";
-            document.getElementById("themeIcon").textContent = dark ? "☀" : "☾";
-            document.getElementById("themeLabel").textContent = dark ? "浅色外观" : "深色外观";
-        }
-        function toggleSwitch(element) {
-            element.classList.toggle("active");
-            element.setAttribute("aria-checked", String(element.classList.contains("active")));
-        }
-        function toggleOnKey(event, element) {
-            if (event.key === "Enter" || event.key === " ") { event.preventDefault(); toggleSwitch(element); }
-        }
-        function addToBag(title) { alert(`《${title}》已加入书袋`); }
-        document.getElementById("chatInput").addEventListener("keydown", event => { if (event.key === "Enter") sendMessage(); });
-        document.addEventListener("keydown", event => { if (event.key === "Escape" && activeChatId) closeChat(); });
-        const savedTheme = localStorage.getItem("hometree_theme");
-        if (savedTheme === "dark") document.body.dataset.theme = "dark";
-        updateThemeButton();
-        renderAll();
-    </script>
-</body>
-</html>
-"""
 
-components.html(html_code, height=1000, scrolling=False)
+def render_match_tab(data: Dict[str, Any]) -> None:
+    st.title("匹配")
+    st.caption("根据书影音、阅读和音乐偏好筛选更匹配的朋友。")
+
+    if "match_index" not in st.session_state:
+        st.session_state.match_index = 0
+    if "matched_users" not in st.session_state:
+        st.session_state.matched_users = []
+    if "selected_match" not in st.session_state:
+        st.session_state.selected_match = None
+
+    users = data["users"]
+    if st.session_state.match_index >= len(users):
+        st.session_state.match_index = 0
+
+    left, right = st.columns([2, 1])
+    with left:
+        user = users[st.session_state.match_index]
+        st.markdown('<div class="card-shell">', unsafe_allow_html=True)
+        st.image(user["img"], use_container_width=True, clamp=True)
+        st.subheader(user["name"])
+        st.caption(f"{user['age']} 岁 · {' / '.join(user['tags'])}")
+        st.markdown(f"> {user['quote']}")
+        st.write(user["ai"])
+        col_a, col_b = st.columns(2)
+
+        if col_a.button("想认识", use_container_width=True):
+            if user["id"] not in [u["id"] for u in st.session_state.matched_users]:
+                st.session_state.matched_users.append(user)
+            st.session_state.selected_match = user
+            st.session_state.match_index += 1
+            if "chat_history" not in st.session_state:
+                st.session_state.chat_history = {}
+            st.session_state.chat_history.setdefault(
+                user["id"],
+                [{"role": "assistant", "text": "你好，我挺喜欢你的阅读列表和歌单风格，想聊聊下一本书。"}],
+            )
+            st.rerun()
+
+        if col_b.button("下一位", use_container_width=True):
+            st.session_state.match_index += 1
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with right:
+        st.markdown('<div class="card-shell">', unsafe_allow_html=True)
+        st.subheader("已匹配")
+        if not st.session_state.matched_users:
+            st.info("还没有匹配到朋友，先看看下一位。")
+        for u in st.session_state.matched_users:
+            row = st.columns([1, 4])
+            with row[0]:
+                st.image(u["img"], width=52)
+            with row[1]:
+                if st.button(u["name"], key=f"match_{u['id']}", use_container_width=True):
+                    st.session_state.selected_match = u
+                    st.rerun()
+                past = st.session_state.chat_history.get(u["id"], [])
+                text = past[-1]["text"] if past else "最近很想聊聊书和音乐。"
+                st.caption(text[:30])
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    if st.session_state.selected_match is not None:
+        render_chat_panel(st.session_state.selected_match)
+
+
+def render_market_tab(data: Dict[str, Any]) -> None:
+    st.title("售卖书籍")
+    st.caption("精选书单，带有书籍封面、简介和相似推荐。")
+
+    for book in data["books"]:
+        with st.container():
+            st.markdown('<div class="card-shell">', unsafe_allow_html=True)
+            cols = st.columns([1, 3])
+            with cols[0]:
+                st.image(book["cover"], width=160, output_format="JPEG")
+            with cols[1]:
+                st.subheader(book["title"])
+                st.caption(f"{book['author']} · {book['city']} · {' / '.join(book['tags'])}")
+                st.write(book["summary"])
+                st.write("相似推荐：", " · ".join(book["similar"]))
+                c1, c2, c3 = st.columns([1, 1, 1])
+                c1.metric("价格", f"¥{book['price']:.2f}")
+                c2.metric("状态", "可寄送")
+                if c3.button("详情", key=f"detail_{book['id']}", use_container_width=True):
+                    st.session_state.selected_book = book
+                if st.button("加入清单", key=f"bag_{book['id']}", use_container_width=True):
+                    st.toast(f"已加入《{book['title']}》")
+            st.markdown("</div>", unsafe_allow_html=True)
+
+    if "selected_book" in st.session_state:
+        book = st.session_state.selected_book
+        st.divider()
+        st.subheader(f"《{book['title']}》详情")
+        col1, col2 = st.columns([1, 2])
+        col1.image(book["cover"], use_container_width=True)
+        with col2:
+            st.markdown(f"**作者：** {book['author']}")
+            st.markdown(f"**标签：** {' / '.join(book['tags'])}")
+            st.markdown(f"**价格：** ¥{book['price']:.2f}")
+            st.markdown(f"**简介：** {book['summary']}")
+            st.markdown(f"**相似书：** {' · '.join(book['similar'])}")
+
+
+def render_dynamic_tab(data: Dict[str, Any]) -> None:
+    st.title("动态")
+    article_tab, blog_tab = st.tabs(["文章", "博客"])
+
+    with article_tab:
+        for post in data["articles"]:
+            st.markdown('<div class="card-shell">', unsafe_allow_html=True)
+            st.image(post["cover"], use_container_width=True)
+            st.subheader(post["title"])
+            st.caption(f"{post['category']} · 2 分钟阅读")
+            st.write(post["summary"])
+            if st.button("查看详情", key=f"article_{post['id']}", use_container_width=True):
+                st.session_state.selected_article = post
+                st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        if "selected_article" in st.session_state:
+            st.divider()
+            post = st.session_state.selected_article
+            st.subheader(post["title"])
+            st.caption(post["category"])
+            st.write(post["content"])
+
+    with blog_tab:
+        for blog in data["blogs"]:
+            st.markdown('<div class="card-shell">', unsafe_allow_html=True)
+            st.image(blog["cover"], use_container_width=True)
+            st.subheader(blog["title"])
+            st.write(blog["summary"])
+            if st.button("打开博客", key=f"blog_{blog['id']}", use_container_width=True):
+                st.session_state.selected_blog = blog
+                st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        if "selected_blog" in st.session_state:
+            st.divider()
+            blog = st.session_state.selected_blog
+            st.subheader(blog["title"])
+            if "content" in blog:
+                st.write(blog["content"])
+            else:
+                st.write(blog["summary"])
+
+
+def render_forum_tab(data: Dict[str, Any]) -> None:
+    st.title("论坛")
+    st.caption("可定制的小型社区，内容可点开查看回复。")
+
+    for thread in data["forum_threads"]:
+        st.markdown('<div class="card-shell">', unsafe_allow_html=True)
+        st.caption(thread["tag"])
+        st.subheader(thread["title"])
+        st.write(thread["desc"])
+        st.caption(thread["meta"])
+        if st.button("查看话题", key=f"forum_{thread['id']}", use_container_width=True):
+            st.session_state.selected_forum = thread["id"]
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    if "selected_forum" in st.session_state:
+        thread_id = st.session_state.selected_forum
+        thread = next(t for t in data["forum_threads"] if t["id"] == thread_id)
+        st.divider()
+        st.subheader(f"主题：{thread['title']}")
+        st.write(thread["desc"])
+        for reply in data["forum_replies"].get(thread_id, []):
+            with st.chat_message("assistant"):
+                st.write(f"{reply['user']}：{reply['text']}")
+        prompt = st.chat_input("写回复…")
+        if prompt:
+            data["forum_replies"].setdefault(thread_id, []).append({"user": "你", "text": prompt})
+            st.rerun()
+
+
+def render_profile_tab(data: Dict[str, Any]) -> None:
+    profile = data["profile"]
+    st.title("个人主页")
+
+    st.markdown('<div class="profile-hero">', unsafe_allow_html=True)
+    col1, col2 = st.columns([1, 3])
+    with col1:
+        st.image(profile["avatar"], width=180)
+    with col2:
+        st.markdown('<div class="title">%s</div>' % profile["name"], unsafe_allow_html=True)
+        st.caption(f"{profile['location']} · 已绑定豆瓣 / 网易云")
+        st.write(profile["bio"])
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    info_cols = st.columns(3)
+    info_cols[0].metric("收藏", "126")
+    info_cols[1].metric("听歌", "89")
+    info_cols[2].metric("已读", "18")
+
+    st.subheader("社交绑定")
+    c1, c2 = st.columns(2)
+    c1.info(profile["social"]["douban"])
+    c2.info(profile["social"]["netease"])
+
+    row = st.columns(2)
+    row[0].button("绑定豆瓣", use_container_width=True)
+    row[1].button("绑定网易云", use_container_width=True)
+
+    st.subheader("主页定制")
+    st.toggle("显示书影音偏好", value=True)
+    st.toggle("显示音乐日记", value=True)
+    st.toggle("显示书店收藏", value=True)
+
+    st.subheader("兴趣标签")
+    st.markdown(" ".join(f'<span class="soft-pill">{tag}</span>' for tag in profile["highlights"]), unsafe_allow_html=True)
+
+
+pages = {
+    "匹配": render_match_tab,
+    "售卖": render_market_tab,
+    "动态": render_dynamic_tab,
+    "论坛": render_forum_tab,
+    "主页": render_profile_tab,
+}
+
+
+def main() -> None:
+    data = get_data()
+    nav = st.sidebar.radio("导航", list(pages.keys()), index=0)
+    pages[nav](data)
+
+
+if __name__ == "__main__":
+    main()
